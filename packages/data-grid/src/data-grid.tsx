@@ -14,6 +14,7 @@ export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
 };
 
 const EXAMPLE_DATA = Array.from({ length: 20 }).map((_, i) => ({
+  id: i,
   first: `first ${i}`,
   second: `second ${i}`,
   third: `third ${i}`,
@@ -31,6 +32,11 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   const grid = useReactTable({
     data: EXAMPLE_DATA,
     columns: [
+      {
+        id: "id",
+        accessorKey: "id",
+        cell: (context) => <DataGridTextCell context={context} />,
+      },
       {
         id: "first",
         accessorKey: "first",
@@ -58,9 +64,12 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   const visibleRows = flatRows;
   const flatColumns = grid.getAllFlatColumns();
 
-  const onEditingChangeHandler = useCallback((value: boolean) => {
-    setIsEditing(value);
-  }, []);
+  const onEditingChangeHandler = useCallback(
+    (value: boolean) => {
+      setIsEditing(value);
+    },
+    [anchor]
+  );
 
   const setSingleRange = useCallback(
     (coords: DataGridCoordinatesType | null) => {

@@ -42,11 +42,15 @@ export const useDataGridCell = <TData, TValue>({
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log({ e });
+
+      console.log({
+        inputRef: inputRef.current,
+        containerRef: containerRef.current,
+      });
+
       if (e.detail === 2) {
         if (inputRef.current) {
           setShowOverlay(false);
-          console.log({ inputRef: inputRef.current });
           inputRef.current.focus();
 
           return;
@@ -59,18 +63,18 @@ export const useDataGridCell = <TData, TValue>({
         containerRef.current.focus();
       }
     },
-    [coords, setSingleRange, setIsSelecting]
+    [anchor, coords, setSingleRange, setIsSelecting]
   );
 
   const handleInputBlur = useCallback(() => {
     setIsEditing(false);
     setShowOverlay(true);
-  }, []);
+  }, [setIsEditing]);
 
   const handleInputFocus = useCallback(() => {
     setIsEditing(true);
     setShowOverlay(false);
-  }, []);
+  }, [setIsEditing]);
 
   const isAnchor = useMemo(() => {
     return anchor ? isCellMatch(anchor, coords) : false;

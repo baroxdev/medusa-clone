@@ -1,6 +1,7 @@
 import React from "react";
 import { DataGridCellContainerProps } from "./types";
 import { cn } from "@medusa-clone/ui";
+
 export const DataGridCellContainer: React.FC<
   Partial<DataGridCellContainerProps>
 > = ({
@@ -24,7 +25,7 @@ export const DataGridCellContainer: React.FC<
         tabIndex={-1}
         {...innerProps}
       >
-        <div className="relative  size-full flex items-center justify-center">
+        <div className="relative z-[1] size-full flex items-center justify-center">
           {children}
         </div>
 
