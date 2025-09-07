@@ -2,6 +2,7 @@ import { LegacyRef, useEffect, useState } from "react";
 import { useDataGridCell } from "../hooks/use-data-grid-cell";
 import { DataGridCellContainer } from "./data-grid-cell-container";
 import { DataGridCellProps, InputProps } from "./types";
+import { useCombinedRefs } from "../hooks/use-combined-refs";
 
 export const DataGridTextCell = <TData, TValue = any>({
   context,
@@ -33,9 +34,10 @@ const Inner = ({ inputProps }: { inputProps: InputProps }) => {
     setLocalValue(value);
   }, [value]);
 
+  const combinedRef = useCombinedRefs(inputRef);
   return (
     <input
-      ref={inputRef as LegacyRef<HTMLInputElement>}
+      ref={combinedRef}
       className={
         "cursor-pointer flex items-center justify-center bg-transparent size-full focus:cursor-text"
       }
