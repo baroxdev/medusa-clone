@@ -60,3 +60,11 @@ export type DataGridCoordinatesType = {
   row: number;
   col: number;
 };
+
+export type GridCell = {
+  field: string;
+  type: "text";
+  enabled: boolean;
+};
+
+export type Grid = (GridCell | null)[][];
