@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CellContext,
   flexRender,
@@ -8,6 +8,7 @@ import {
 import { DataGridTextCell } from "./components/data-grid-text-cell";
 import { DataGridContext } from "./context/data-grid-context";
 import { DataGridCoordinatesType } from "./components/types";
+import { useDataGridKeydownEvent } from "./hooks/use-data-grid-keydown-event";
 
 export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
   children?: React.ReactNode;
@@ -87,6 +88,16 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
     },
     [setSingleRange]
   );
+
+  const { handleKeyDownEvent } = useDataGridKeydownEvent();
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDownEvent);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDownEvent);
+    };
+  }, [handleKeyDownEvent]);
 
   const values = useMemo(
     () => ({
