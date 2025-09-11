@@ -14,6 +14,29 @@ export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
   children?: React.ReactNode;
 };
 
+const COLUMNS = [
+  {
+    id: "id",
+    accessorKey: "id",
+    cell: (context) => <DataGridTextCell context={context} />,
+  },
+  {
+    id: "first",
+    accessorKey: "first",
+    cell: (context) => <DataGridTextCell context={context} />,
+  },
+  {
+    id: "second",
+    accessorKey: "second",
+    cell: (context) => <DataGridTextCell context={context} />,
+  },
+  {
+    id: "third",
+    accessorKey: "third",
+    cell: (context) => <DataGridTextCell context={context} />,
+  },
+];
+
 const EXAMPLE_DATA = Array.from({ length: 20 }).map((_, i) => ({
   id: i,
   first: `first ${i}`,
@@ -32,28 +55,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
 
   const grid = useReactTable({
     data: EXAMPLE_DATA,
-    columns: [
-      {
-        id: "id",
-        accessorKey: "id",
-        cell: (context) => <DataGridTextCell context={context} />,
-      },
-      {
-        id: "first",
-        accessorKey: "first",
-        cell: (context) => <DataGridTextCell context={context} />,
-      },
-      {
-        id: "second",
-        accessorKey: "second",
-        cell: (context) => <DataGridTextCell context={context} />,
-      },
-      {
-        id: "third",
-        accessorKey: "third",
-        cell: (context) => <DataGridTextCell context={context} />,
-      },
-    ],
+    columns: COLUMNS,
     defaultColumn: {
       size: 200,
       maxSize: 400,
