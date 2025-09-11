@@ -9,7 +9,6 @@ import { DataGridTextCell } from "./components/data-grid-text-cell";
 import { DataGridContext } from "./context/data-grid-context";
 import { DataGridCoordinatesType } from "./components/types";
 import { useDataGridKeydownEvent } from "./hooks/use-data-grid-keydown-event";
-import { DataGridMaxtrix } from "./models/data-grid-matrix";
 
 export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
   children?: React.ReactNode;
@@ -22,29 +21,6 @@ const EXAMPLE_DATA = Array.from({ length: 20 }).map((_, i) => ({
   third: `third ${i}`,
 }));
 
-const columns = [
-  {
-    id: "id",
-    accessorKey: "id",
-    cell: (context) => <DataGridTextCell context={context} />,
-  },
-  {
-    id: "first",
-    accessorKey: "first",
-    cell: (context) => <DataGridTextCell context={context} />,
-  },
-  {
-    id: "second",
-    accessorKey: "second",
-    cell: (context) => <DataGridTextCell context={context} />,
-  },
-  {
-    id: "third",
-    accessorKey: "third",
-    cell: (context) => <DataGridTextCell context={context} />,
-  },
-];
-
 const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
   const [rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
@@ -56,7 +32,28 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
 
   const grid = useReactTable({
     data: EXAMPLE_DATA,
-    columns: columns,
+    columns: [
+      {
+        id: "id",
+        accessorKey: "id",
+        cell: (context) => <DataGridTextCell context={context} />,
+      },
+      {
+        id: "first",
+        accessorKey: "first",
+        cell: (context) => <DataGridTextCell context={context} />,
+      },
+      {
+        id: "second",
+        accessorKey: "second",
+        cell: (context) => <DataGridTextCell context={context} />,
+      },
+      {
+        id: "third",
+        accessorKey: "third",
+        cell: (context) => <DataGridTextCell context={context} />,
+      },
+    ],
     defaultColumn: {
       size: 200,
       maxSize: 400,
@@ -67,10 +64,6 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   const { flatRows } = grid.getRowModel();
   const visibleRows = flatRows;
   const flatColumns = grid.getAllFlatColumns();
-  const matrix = useMemo(
-    () => new DataGridMaxtrix(flatRows, columns),
-    [flatRows, columns]
-  );
 
   const onEditingChangeHandler = useCallback(
     (value: boolean) => {
@@ -95,13 +88,8 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
     },
     [setSingleRange]
   );
-  console.log({ anchor });
-  const { handleKeyDownEvent } = useDataGridKeydownEvent({
-    matrix,
-    anchor,
-    setRangeEnd,
-    setSingleRange,
-  });
+
+  const { handleKeyDownEvent } = useDataGridKeydownEvent();
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDownEvent);
