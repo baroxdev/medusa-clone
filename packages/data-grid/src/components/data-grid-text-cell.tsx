@@ -1,8 +1,8 @@
-import { LegacyRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useCombinedRefs } from "../hooks/use-combined-refs";
 import { useDataGridCell } from "../hooks/use-data-grid-cell";
 import { DataGridCellContainer } from "./data-grid-cell-container";
 import { DataGridCellProps, InputProps } from "./types";
-import { useCombinedRefs } from "../hooks/use-combined-refs";
 
 export const DataGridTextCell = <TData, TValue = any>({
   context,

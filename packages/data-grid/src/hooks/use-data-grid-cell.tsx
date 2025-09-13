@@ -12,6 +12,8 @@ type UseDataGridCellOptions<TData, TValue> = {
   context: CellContext<TData, TValue>;
 };
 
+const textCharacterRegex = /^.$/u;
+
 export const useDataGridCell = <TData, TValue>({
   context,
 }: UseDataGridCellOptions<TData, TValue>) => {
@@ -76,8 +78,12 @@ export const useDataGridCell = <TData, TValue>({
     setShowOverlay(false);
   }, [setIsEditing]);
 
+  const validateKeyStroke = useCallback((key: string) => {
+    return textCharacterRegex.test(key);
+  }, []);
+
   const handleContainerKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         // Skip the Enter event handler, let the DataGridRoot handle it.
         return;
@@ -85,7 +91,7 @@ export const useDataGridCell = <TData, TValue>({
 
       console.log({ showOverlay });
 
-      if (!inputRef.current || !showOverlay) {
+      if (!inputRef.current || !validateKeyStroke(e.key) || !showOverlay) {
         return;
       }
       console.log({
@@ -98,9 +104,10 @@ export const useDataGridCell = <TData, TValue>({
       if (inputRef.current instanceof HTMLInputElement) {
         // Clear the current value
         inputRef.current.value = "";
+        console.log({ window: window.HTMLInputElement.prototype });
 
-        // WHY use the nativeInputValueSetter and dispatch an event can reload the input?
-        // https://stackoverflow.com/questions/23892547/what-is-the-best-way-to-trigger-change-or-input-event-in-react-js
+        // WHY: use the nativeInputValueSetter and dispatch an event can reload the input?
+        // ANSWER: https://stackoverflow.com/questions/23892547/what-is-the-best-way-to-trigger-change-or-input-event-in-react-js
         // Simulate typing the new key
         const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
           window.HTMLInputElement.prototype,
@@ -140,7 +147,6 @@ export const useDataGridCell = <TData, TValue>({
 
   // NOTE: automatically focus on the container of the cell when moving to another cell.
   useEffect(() => {
-    console.log("isAnchor is CHANGED");
     if (isAnchor) {
       containerRef.current?.focus();
     }
