@@ -17,9 +17,10 @@ export const DataGridCellContainer: React.FC<
       <div
         className={cn(
           "bg-white flex items-center px-4 py-2.5 size-full gap-x-2 outline-none",
-          isSelected && "bg-blue-100",
           {
-            "ring-2 ring-inset ring-blue-500": isAnchor,
+            "ring-2 ring-inset ring-[#3b82f6]": isAnchor,
+            "bg-[#eff6ff] [&:has([data-field]:focus)]:bg-white":
+              isSelected || isAnchor,
           }
         )}
         tabIndex={-1}

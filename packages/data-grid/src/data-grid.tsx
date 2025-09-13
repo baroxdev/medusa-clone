@@ -63,12 +63,12 @@ const columns = [
 const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
-  const [rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
+  const [_rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
     null
   );
 
   const [isEditing, setIsEditing] = useState(false);
-  const [isSelecting, setIsSelecting] = useState(false);
+  const [_isSelecting, setIsSelecting] = useState(false);
 
   const grid = useReactTable({
     data: EXAMPLE_DATA,
@@ -153,18 +153,18 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   return (
     <DataGridContext.Provider value={values}>
       <div {...props}>
-        <div className="bg-gray-200 flex flex-col size-full">
+        <div className="bg-[#fafafa] flex flex-col size-full">
           {/*    DataGridHeader */}
           {/*    DataGridBody */}
           <div className="size-full overflow-hidden">
             <div
               data-slot="data-grid-container"
               ref={containerRef}
-              className="relative h-full overflow-auto outline-none"
+              className="relative h-full overflow-auto outline-none "
             >
               <div role={"grid"} className="grid">
                 <div role="rowgroup" className="grid">
-                  {grid.getHeaderGroups().map((headerGroup, i) => {
+                  {grid.getHeaderGroups().map((headerGroup, _i) => {
                     return (
                       <div
                         role={"row"}
@@ -176,7 +176,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                             <div
                               role="columnheader"
                               key={header.id}
-                              className="flex items-center px-4 py-2.5 bg-gray-50 border-b border-r "
+                              className="flex items-center font-medium px-4 py-2.5 bg-white border-b border-t text-[#52525B] text-sm border-r border-[#e4e4e7]"
                               style={{
                                 width: header.getSize(),
                               }}
@@ -195,7 +195,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                   })}
                 </div>
                 <div role="rowgroup" className="relative grid">
-                  {visibleRows.map((row, i) => {
+                  {visibleRows.map((row, _i) => {
                     const rowIndex = row.index;
                     const visibleCells = row.getVisibleCells();
 
@@ -222,7 +222,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                               style={{
                                 width: cell.column.getSize(),
                               }}
-                              className="flex items-center border-b border-r p-0 outline-none"
+                              className="flex items-center border-b border-r border-[#e4e4e7] p-0 outline-none"
                               // Note: Don't know why need this
                               // NOTE UPDATED: maybe to prevent the incorrect navgate when tab
                               tabIndex={-1}

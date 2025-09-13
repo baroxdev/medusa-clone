@@ -3,6 +3,7 @@ import { useCombinedRefs } from "../hooks/use-combined-refs";
 import { useDataGridCell } from "../hooks/use-data-grid-cell";
 import { DataGridCellContainer } from "./data-grid-cell-container";
 import { DataGridCellProps, InputProps } from "./types";
+import { cn } from "@medusa-clone/ui";
 
 export const DataGridTextCell = <TData, TValue = any>({
   context,
@@ -38,11 +39,17 @@ const Inner = ({ inputProps }: { inputProps: InputProps }) => {
   return (
     <input
       ref={combinedRef}
-      className={
-        "cursor-pointer flex items-center justify-center bg-transparent size-full focus:cursor-text"
-      }
+      className={cn(
+        "cursor-pointer flex items-center text-sm text-[#52525B] justify-center bg-transparent size-full",
+        "focus:cursor-text outline-none"
+      )}
+      autoComplete="off"
+      tabIndex={-1}
       value={localValue}
-      onBlur={onBlur}
+      onBlur={() => {
+        onBlur();
+        onChange(localValue, value);
+      }}
       onFocus={onFocus}
       onChange={(e) => {
         setLocalValue(e.target.value);
