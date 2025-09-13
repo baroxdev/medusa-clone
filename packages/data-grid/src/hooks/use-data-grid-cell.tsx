@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DataGridCellContext,
   DataGridCellRenderProps,
@@ -93,6 +93,14 @@ export const useDataGridCell = <TData, TValue>({
   const innerAttributes = {
     "data-container-id": id,
   };
+
+  // NOTE: automatically focus on the container of the cell when moving to another cell.
+  useEffect(() => {
+    console.log("isAnchor is CHANGED");
+    if (isAnchor) {
+      containerRef.current?.focus();
+    }
+  }, [isAnchor]);
 
   const renderProps: DataGridCellRenderProps = {
     container: {

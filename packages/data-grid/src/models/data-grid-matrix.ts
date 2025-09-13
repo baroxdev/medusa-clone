@@ -1,5 +1,9 @@
 import { ColumnDef, Row } from "@tanstack/react-table";
-import { DataGridCoordinatesType, Grid } from "../components/types";
+import {
+  DataGridCoordinatesType,
+  DataGridDirection,
+  Grid,
+} from "../components/types";
 
 export class DataGridMaxtrix<TData> {
   private cells: Grid;
@@ -11,7 +15,7 @@ export class DataGridMaxtrix<TData> {
   getValidMovement(
     row: number,
     col: number,
-    direction: string
+    direction: DataGridDirection
   ): DataGridCoordinatesType {
     const [dRow, dCol] = this._getDirectionDeltas(direction);
 
@@ -40,7 +44,7 @@ export class DataGridMaxtrix<TData> {
     };
   }
 
-  private _getDirectionDeltas(direction: string): [number, number] {
+  private _getDirectionDeltas(direction: DataGridDirection): [number, number] {
     switch (direction) {
       case "ArrowUp":
         return [-1, 0];

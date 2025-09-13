@@ -1,6 +1,8 @@
 import { CellContext } from "@tanstack/react-table";
 import React, { PropsWithChildren, ReactNode, RefObject } from "react";
 
+export type DataGridDirection = string;
+
 export interface DataGridCellProps<TData = unknown, TValue = any> {
   context: CellContext<TData, TValue>;
 }

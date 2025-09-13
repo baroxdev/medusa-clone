@@ -1,14 +1,21 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CellContext,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { DataGridTextCell } from "./components/data-grid-text-cell";
-import { DataGridContext } from "./context/data-grid-context";
 import { DataGridCoordinatesType } from "./components/types";
+import { DataGridContext } from "./context/data-grid-context";
 import { useDataGridKeydownEvent } from "./hooks/use-data-grid-keydown-event";
+import { useDataGridQueryTool } from "./hooks/use-data-grid-query-tool";
 import { DataGridMaxtrix } from "./models/data-grid-matrix";
 
 export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
@@ -26,26 +33,35 @@ const columns = [
   {
     id: "id",
     accessorKey: "id",
-    cell: (context) => <DataGridTextCell context={context} />,
+    cell: (context: CellContext<any, any>) => (
+      <DataGridTextCell context={context} />
+    ),
   },
   {
     id: "first",
     accessorKey: "first",
-    cell: (context) => <DataGridTextCell context={context} />,
+    cell: (context: CellContext<any, any>) => (
+      <DataGridTextCell context={context} />
+    ),
   },
   {
     id: "second",
     accessorKey: "second",
-    cell: (context) => <DataGridTextCell context={context} />,
+    cell: (context: CellContext<any, any>) => (
+      <DataGridTextCell context={context} />
+    ),
   },
   {
     id: "third",
     accessorKey: "third",
-    cell: (context) => <DataGridTextCell context={context} />,
+    cell: (context: CellContext<any, any>) => (
+      <DataGridTextCell context={context} />
+    ),
   },
 ];
 
 const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
   const [rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
     null
@@ -72,6 +88,10 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
     [flatRows, columns]
   );
 
+  const queryTool = useDataGridQueryTool(containerRef);
+
+  console.log({ queryTool });
+
   const onEditingChangeHandler = useCallback(
     (value: boolean) => {
       setIsEditing(value);
@@ -95,12 +115,14 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
     },
     [setSingleRange]
   );
-  console.log({ anchor });
   const { handleKeyDownEvent } = useDataGridKeydownEvent({
     matrix,
     anchor,
+    queryTool,
+    isEditing,
     setRangeEnd,
     setSingleRange,
+    onEditingChangeHandler,
   });
 
   useEffect(() => {
@@ -137,6 +159,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
           <div className="size-full overflow-hidden">
             <div
               data-slot="data-grid-container"
+              ref={containerRef}
               className="relative h-full overflow-auto outline-none"
             >
               <div role={"grid"} className="grid">
