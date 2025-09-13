@@ -76,6 +76,50 @@ export const useDataGridCell = <TData, TValue>({
     setShowOverlay(false);
   }, [setIsEditing]);
 
+  const handleContainerKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        // Skip the Enter event handler, let the DataGridRoot handle it.
+        return;
+      }
+
+      console.log({ showOverlay });
+
+      if (!inputRef.current || !showOverlay) {
+        return;
+      }
+      console.log({
+        inputRef: inputRef.current,
+        instanceof: inputRef.current instanceof HTMLInputElement,
+      });
+      inputRef.current?.focus();
+
+      // setShowOverlay(false) // NOTE?: Maybe Redundance setShowOverlay?
+      if (inputRef.current instanceof HTMLInputElement) {
+        // Clear the current value
+        inputRef.current.value = "";
+
+        // WHY use the nativeInputValueSetter and dispatch an event can reload the input?
+        // https://stackoverflow.com/questions/23892547/what-is-the-best-way-to-trigger-change-or-input-event-in-react-js
+        // Simulate typing the new key
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          "value"
+        )?.set;
+        nativeInputValueSetter?.call(inputRef.current, e.key);
+
+        // Trigger input event to notify react-hook-form
+        const event = new Event("input", { bubbles: true });
+        inputRef.current.dispatchEvent(event);
+      }
+
+      //
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [showOverlay]
+  );
+
   const isAnchor = useMemo(() => {
     return anchor ? isCellMatch(anchor, coords) : false;
   }, [anchor, coords]);
@@ -114,7 +158,7 @@ export const useDataGridCell = <TData, TValue>({
         onFocus: getWrapperFocusHandler(coords),
         onMouseOver: () => {},
         onMouseDown: () => {},
-        onKeyDown: () => {},
+        onKeyDown: handleContainerKeyDown,
         ...innerAttributes,
       },
       overlayProps: {
