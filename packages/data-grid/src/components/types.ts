@@ -1,4 +1,4 @@
-import { CellContext } from "@tanstack/react-table";
+import { CellContext, ColumnMeta } from "@tanstack/react-table";
 import React, { PropsWithChildren, ReactNode, RefObject } from "react";
 
 export type DataGridDirection = string;
@@ -65,8 +65,24 @@ export type DataGridCoordinatesType = {
 
 export type GridCell = {
   field: string;
-  type: "text";
+  type: DataGridColumnType;
   enabled: boolean;
 };
 
 export type Grid = (GridCell | null)[][];
+export type DataGridColumnType = "text" | "boolean";
+
+export type InternalColumnMeta<TData, TValue> = {
+  name: string;
+  field?: string;
+} & (
+  | {
+      field: string;
+      type: DataGridColumnType;
+    }
+  | {
+      field?: null | undefined;
+      type?: never;
+    }
+) &
+  ColumnMeta<TData, any>;

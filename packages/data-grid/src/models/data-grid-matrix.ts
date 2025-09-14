@@ -1,8 +1,10 @@
 import { ColumnDef, Row } from "@tanstack/react-table";
 import {
+  DataGridColumnType,
   DataGridCoordinatesType,
   DataGridDirection,
   Grid,
+  InternalColumnMeta,
 } from "../components/types";
 
 export class DataGridMaxtrix<TData> {
@@ -10,6 +12,14 @@ export class DataGridMaxtrix<TData> {
 
   constructor(data: Row<TData>[], columns: ColumnDef<TData>[]) {
     this.cells = this._populateCells(data, columns);
+  }
+
+  getCellType(cell: DataGridCoordinatesType): DataGridColumnType | null {
+    if (this._isValidPosition(cell.row, cell.col)) {
+      return this.cells[cell.row][cell.col]?.type || null;
+    }
+
+    return null;
   }
 
   getValidMovement(
@@ -73,13 +83,20 @@ export class DataGridMaxtrix<TData> {
     ) as Grid;
 
     rows.forEach((_row, rowIndex) => {
-      columns.forEach((_column, colIndex) => {
+      columns.forEach((column, colIndex) => {
         if (!this._isValidPosition(rowIndex, colIndex, cells)) {
           return;
         }
+
+        const { type } = column.meta as InternalColumnMeta<TData, any>;
+
+        if (!type) {
+          return;
+        }
+
         cells[rowIndex][colIndex] = {
           enabled: true,
-          type: "text",
+          type,
           field: `field-${rowIndex}:${colIndex}`,
         };
       });

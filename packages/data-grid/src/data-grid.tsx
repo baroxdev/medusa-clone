@@ -1,5 +1,6 @@
 import {
   CellContext,
+  ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -30,13 +31,16 @@ const EXAMPLE_DATA = Array.from({ length: 20 }).map((_, i) => ({
   third: `third ${i}`,
 }));
 
-const columns = [
+const columns: ColumnDef<(typeof EXAMPLE_DATA)[number]>[] = [
   {
     id: "id",
     accessorKey: "id",
     cell: (context: CellContext<any, any>) => (
       <DataGrid.TextCell context={context} />
     ),
+    meta: {
+      type: "text",
+    },
   },
   {
     id: "first",
@@ -44,6 +48,9 @@ const columns = [
     cell: (context: CellContext<any, any>) => (
       <DataGrid.TextCell context={context} />
     ),
+    meta: {
+      type: "text",
+    },
   },
   {
     id: "second",
@@ -51,6 +58,9 @@ const columns = [
     cell: (context: CellContext<any, any>) => (
       <DataGrid.BooleanCell context={context} />
     ),
+    meta: {
+      type: "boolean",
+    },
   },
   {
     id: "third",
@@ -58,6 +68,9 @@ const columns = [
     cell: (context: CellContext<any, any>) => (
       <DataGrid.TextCell context={context} />
     ),
+    meta: {
+      type: "text",
+    },
   },
 ];
 

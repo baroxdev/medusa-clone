@@ -85,6 +85,13 @@ export const useDataGridKeydownEvent = <TData, TValue>({
     [isEditing, handleMoveOnEnter, handleEditOnrEnter]
   );
 
+  const handleEnterKeyBoolean = useCallback(
+    (e: KeyboardEvent, anchor: DataGridCoordinatesType) => {
+      console.warn("DO NOTHING WITH ENTER AT BOOLEAN CELL");
+    },
+    [anchor]
+  );
+
   const handleEnterKey = useCallback(
     (e: KeyboardEvent) => {
       if (!anchor) {
@@ -93,9 +100,18 @@ export const useDataGridKeydownEvent = <TData, TValue>({
 
       e.preventDefault();
 
-      handleEnterKeyTextOrNumber(e, anchor);
+      const type = matrix.getCellType(anchor);
+
+      switch (type) {
+        case "text":
+          handleEnterKeyTextOrNumber(e, anchor);
+          break;
+        case "boolean":
+          handleEnterKeyBoolean(e, anchor);
+          break;
+      }
     },
-    [matrix, anchor, handleEnterKeyTextOrNumber]
+    [matrix, anchor, handleEnterKeyTextOrNumber, handleEnterKeyBoolean]
   );
 
   const handleTabKey = useCallback(
