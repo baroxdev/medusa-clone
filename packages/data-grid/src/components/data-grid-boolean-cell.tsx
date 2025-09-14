@@ -1,4 +1,4 @@
-import { Button, Checkbox } from "@medusa-clone/ui";
+import { Checkbox } from "@medusa-clone/ui";
 import { useCombinedRefs } from "../hooks/use-combined-refs";
 import { useDataGridCell } from "../hooks/use-data-grid-cell";
 import { DataGridCellContainer } from "./data-grid-cell-container";
@@ -18,19 +18,25 @@ export const DataGridBooleanCell = <TData, TValue>({
 };
 
 const Inner = ({ inputProps }: { inputProps: InputProps }) => {
-  const { ref, value, ...props } = inputProps;
-  console.log({ props });
-  const combinedRef = useCombinedRefs(ref);
+  const {
+    ref: inputRef,
+    value,
+    onChange,
+    onFocus,
+    onBlur,
+    ...attributes
+  } = inputProps;
+
+  const combinedRef = useCombinedRefs(inputRef);
   return (
     <>
-      <Button>Test</Button>
-      <Checkbox />
-      <input
-        // type="checkbox"
+      <Checkbox
+        tabIndex={-1}
+        onCheckedChange={(newValue) => onChange(newValue === true, value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
         ref={combinedRef}
-        value={value}
-        className="cursor-pointer"
-        //   {...props}
+        {...attributes}
       />
     </>
   );

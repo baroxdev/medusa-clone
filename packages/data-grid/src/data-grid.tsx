@@ -35,28 +35,28 @@ const columns = [
     id: "id",
     accessorKey: "id",
     cell: (context: CellContext<any, any>) => (
-      <DataGridTextCell context={context} />
+      <DataGrid.TextCell context={context} />
     ),
   },
   {
     id: "first",
     accessorKey: "first",
     cell: (context: CellContext<any, any>) => (
-      <DataGridTextCell context={context} />
+      <DataGrid.TextCell context={context} />
     ),
   },
   {
     id: "second",
     accessorKey: "second",
     cell: (context: CellContext<any, any>) => (
-      <DataGridBooleanCell context={context} />
+      <DataGrid.BooleanCell context={context} />
     ),
   },
   {
     id: "third",
     accessorKey: "third",
     cell: (context: CellContext<any, any>) => (
-      <DataGridTextCell context={context} />
+      <DataGrid.TextCell context={context} />
     ),
   },
 ];
