@@ -1,208 +1,117 @@
-# Turborepo Design System Starter
+# 🛒 Medusa Clone
 
-This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
+> A modern e-commerce platform built from the ground up, inspired by MedusaJS architecture
 
-This guide explains how to use a React design system starter powered by:
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/yourusername/medusa-clone)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?logo=turborepo&logoColor=white)](https://turborepo.org/)
 
-- 🏎 [Turborepo](https://turborepo.com) — High-performance build system for Monorepos
-- 🚀 [React](https://reactjs.org/) — JavaScript library for user interfaces
-- 🛠 [Tsup](https://github.com/egoist/tsup) — TypeScript bundler powered by esbuild
-- 📖 [Storybook](https://storybook.js.org/) — UI component environment powered by Vite
+## 🎯 Project Overview
 
-As well as a few others tools preconfigured:
+This project is a learning journey into building a comprehensive e-commerce platform by recreating MedusaJS from scratch. Rather than forking or extending the original, I'm building each component to deeply understand the architecture and patterns that make modern e-commerce platforms tick.
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-- [Changesets](https://github.com/changesets/changesets) for managing versioning and changelogs
-- [GitHub Actions](https://github.com/changesets/action) for fully automated package publishing
+## ✨ Features
 
-## Using this example
+### 🏗️ **Current Implementation**
 
-Run the following command:
+- **Modern Monorepo Setup** - Turborepo-powered development environment
+- **Type-Safe Development** - Full TypeScript integration
+- **Component Development** - Storybook-driven UI development
+- **Advanced DataGrid** - Interactive product variant management
 
-```sh
-npx create-turbo@latest -e design-system
-```
+### 🚧 **In Development**
 
-### Useful Commands
+- Interactive product creation forms
+- File upload and gallery management
+- Comprehensive admin dashboard
+- Product catalog management
 
-- `pnpm build` - Build all packages, including the Storybook site
-- `pnpm dev` - Run all packages locally and preview with Storybook
-- `pnpm lint` - Lint all packages
-- `pnpm changeset` - Generate a changeset
-- `pnpm clean` - Clean up all `node_modules` and `dist` folders (runs each package's clean script)
+## 🛠️ Tech Stack
 
-## Turborepo
+### **Core Technologies**
 
-[Turborepo](https://turborepo.com) is a high-performance build system for JavaScript and TypeScript codebases. It was designed after the workflows used by massive software engineering organizations to ship code at scale. Turborepo abstracts the complex configuration needed for monorepos and provides fast, incremental builds with zero-configuration remote caching.
+- 🏎 **[Turborepo](https://turborepo.com)** — High-performance monorepo build system
+- 🚀 **[React](https://reactjs.org/)** — Modern UI library
+- 📦 **[TypeScript](https://www.typescriptlang.org/)** — Type-safe JavaScript
+- 🛠 **[Tsup](https://github.com/egoist/tsup)** — Lightning-fast TypeScript bundler
 
-Using Turborepo simplifies managing your design system monorepo, as you can have a single lint, build, test, and release process for all packages. [Learn more](https://vercel.com/blog/monorepos-are-changing-how-teams-build-software) about how monorepos improve your development workflow.
+### **Development Tools**
 
-## Apps & Packages
+- 📖 **[Storybook](https://storybook.js.org/)** — Component development environment
+- 🔍 **[ESLint](https://eslint.org/)** — Code quality enforcement
+- ✨ **[Prettier](https://prettier.io)** — Code formatting _(Coming Soon)_
+- 📝 **[Changesets](https://github.com/changesets/changesets)** — Version management _(Coming Soon)_
 
-This Turborepo includes the following packages and applications:
+## 🗺️ Roadmap
 
-- `apps/docs`: Component documentation site with Storybook
-- `packages/ui`: Core React components
-- `packages/typescript-config`: Shared `tsconfig.json`s used throughout the Turborepo
-- `packages/eslint-config`: ESLint preset
+### **Phase 1: Foundation** _(Current)_
 
-Each package and app is 100% [TypeScript](https://www.typescriptlang.org/). Workspaces enables us to "hoist" dependencies that are shared between packages to the root `package.json`. This means smaller `node_modules` folders and a better local dev experience. To install a dependency for the entire monorepo, use the `-w` workspaces flag with `pnpm add`.
+- [x] Monorepo setup with Turborepo
+- [x] TypeScript configuration
+- [x] Storybook integration
+- [ ] **DataGrid component** for product variants _(In Progress)_
 
-This example sets up your `.gitignore` to exclude all generated files, other folders like `node_modules` used to store your dependencies.
+### **Phase 2: Core Components**
 
-### Compilation
+- [ ] Publish DataGrid as standalone npm package
+- [ ] Gallery management system (CRUD + Drag & Drop)
+- [ ] Form components library
+- [ ] File upload utilities
 
-To make the ui library code work across all browsers, we need to compile the raw TypeScript and React code to plain JavaScript. We can accomplish this with `tsup`, which uses `esbuild` to greatly improve performance.
+### **Phase 3: Product Management**
 
-Running `pnpm build` from the root of the Turborepo will run the `build` command defined in each package's `package.json` file. Turborepo runs each `build` in parallel and caches & hashes the output to speed up future builds.
+- [ ] Comprehensive product creation form
+- [ ] Product catalog with search & filtering
+- [ ] Inventory management
+- [ ] Variant management system
 
-For `@medusa-clone/ui`, the `build` command is equivalent to the following:
+### **Phase 4: Advanced Features**
 
-```bash
-tsup src/*.tsx --format esm,cjs --dts --external react
-```
+- [ ] Order management
+- [ ] Customer management
+- [ ] Analytics dashboard
+- [ ] Multi-store support
 
-`tsup` compiles all of the components in the design system individually, into both ES Modules and CommonJS formats as well as their TypeScript types. The `package.json` for `@medusa-clone/ui` then instructs the consumer to select the correct format:
-
-```json:ui/package.json
-{
-  "name": "@medusa-clone/ui",
-  "version": "0.0.0",
-  "sideEffects": false,
-  "exports":{
-    "./button": {
-      "types": "./src/button.tsx",
-      "import": "./dist/button.mjs",
-      "require": "./dist/button.js"
-    }
-  }
-}
-```
-
-Run `pnpm build` to confirm compilation is working correctly. You should see a folder `ui/dist` which contains the compiled output.
+## 🚀 Quick Start
 
 ```bash
-ui
-└── dist
-    ├── button.d.ts  <-- Types
-    ├── button.js    <-- CommonJS version
-    ├── button.mjs   <-- ES Modules version
-    └── button.d.mts   <-- ES Modules version with Types
+# Clone the repository
+git clone https://github.com/yourusername/medusa-clone.git
+cd medusa-clone
+
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
 ```
 
-## Components
+Visit `http://localhost:6006` to see Storybook in action!
 
-Each file inside of `ui/src` is a component inside our design system. For example:
+## 📜 Available Scripts
 
-```tsx:ui/src/Button.tsx
-import * as React from 'react';
+| Command      | Description                                       |
+| ------------ | ------------------------------------------------- |
+| `pnpm dev`   | Start all packages locally with Storybook preview |
+| `pnpm build` | Build all packages for production                 |
+| `pnpm clean` | Clean all build artifacts and node_modules        |
 
-export interface ButtonProps {
-  children: React.ReactNode;
-}
+## 📄 License
 
-export function Button(props: ButtonProps) {
-  return <button>{props.children}</button>;
-}
+This project is open source and available under the [MIT License](LICENSE).
 
-Button.displayName = 'Button';
-```
+## 🙏 Acknowledgments
 
-When adding a new file, ensure that its specifier is defined in `package.json` file:
+- **[MedusaJS](https://medusajs.com/)** for the inspiration and architectural patterns
+- **[Vercel](https://vercel.com/)** for the amazing developer tools ecosystem
 
-```json:ui/package.json
-{
-  "name": "@medusa-clone/ui",
-  "version": "0.0.0",
-  "sideEffects": false,
-  "exports":{
-    "./button": {
-      "types": "./src/button.tsx",
-      "import": "./dist/button.mjs",
-      "require": "./dist/button.js"
-    }
-    // Add new component exports here
-  }
-}
-```
+---
 
-## Storybook
+<div align="center">
 
-Storybook provides us with an interactive UI playground for our components. This allows us to preview our components in the browser and instantly see changes when developing locally. This example preconfigures Storybook to:
+**[⭐ Star this repo](https://github.com/baroxdev/medusa-clone)** if you find it helpful!
 
-- Use Vite to bundle stories instantly (in milliseconds)
-- Automatically find any stories inside the `stories/` folder
-- Support using module path aliases like `@medusa-clone/ui` for imports
-- Write MDX for component documentation pages
+Made with ❤️ by [Bao Phan](https://github.com/baroxdev)
 
-For example, here's the included Story for our `Button` component:
-
-```js:apps/docs/stories/button.stories.mdx
-import { Button } from '@medusa-clone/ui/button';
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
-
-<Meta title="Components/Button" component={Button} />
-
-# Button
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget consectetur tempor, nisl nunc egestas nisi, euismod aliquam nisl nunc euismod.
-
-## Props
-
-<Props of={Box} />
-
-## Examples
-
-<Preview>
-  <Story name="Default">
-    <Button>Hello</Button>
-  </Story>
-</Preview>
-```
-
-This example includes a few helpful Storybook scripts:
-
-- `pnpm dev`: Starts Storybook in dev mode with hot reloading at `localhost:6006`
-- `pnpm build`: Builds the Storybook UI and generates the static HTML files
-- `pnpm preview-storybook`: Starts a local server to view the generated Storybook UI
-
-## Versioning & Publishing Packages
-
-This example uses [Changesets](https://github.com/changesets/changesets) to manage versions, create changelogs, and publish to npm. It's preconfigured so you can start publishing packages immediately.
-
-You'll need to create an `NPM_TOKEN` and `GITHUB_TOKEN` and add it to your GitHub repository settings to enable access to npm. It's also worth installing the [Changesets bot](https://github.com/apps/changeset-bot) on your repository.
-
-### Generating the Changelog
-
-To generate your changelog, run `pnpm changeset` locally:
-
-1. **Which packages would you like to include?** – This shows which packages and changed and which have remained the same. By default, no packages are included. Press `space` to select the packages you want to include in the `changeset`.
-1. **Which packages should have a major bump?** – Press `space` to select the packages you want to bump versions for.
-1. If doing the first major version, confirm you want to release.
-1. Write a summary for the changes.
-1. Confirm the changeset looks as expected.
-1. A new Markdown file will be created in the `changeset` folder with the summary and a list of the packages included.
-
-### Releasing
-
-When you push your code to GitHub, the [GitHub Action](https://github.com/changesets/action) will run the `release` script defined in the root `package.json`:
-
-```bash
-turbo run build --filter=docs^... && changeset publish
-```
-
-Turborepo runs the `build` script for all publishable packages (excluding docs) and publishes the packages to npm. By default, this example includes `acme` as the npm organization. To change this, do the following:
-
-- Rename folders in `packages/*` to replace `acme` with your desired scope
-- Search and replace `acme` with your desired scope
-- Re-run `pnpm install`
-
-To publish packages to a private npm organization scope, **remove** the following from each of the `package.json`'s
-
-```diff
-- "publishConfig": {
--  "access": "public"
-- },
-```
+</div>
