@@ -1,4 +1,5 @@
 @import "tailwindcss";
 
 
-@source "../../../packages/data-grid"
+@source "../node_modules/@medusa-clone/data-grid";
+@source "../node_modules/@medusa-clone/ui";

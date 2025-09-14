@@ -15,9 +15,8 @@
     "@tailwindcss/postcss": "^4.1.12",
     "@tailwindcss/vite": "^4.1.12",
     "postcss": "^8.5.6",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "tailwindcss": "catalog:"
+    "postcss-import": "^16.1.1",
+    "react": "^18.2.0"
   },
   "devDependencies": {
     "@medusa-clone/typescript-config": "workspace:*",
@@ -32,6 +31,7 @@
     "eslint": "^8.57.0",
     "serve": "^14.2.1",
     "storybook": "^8.2.6",
+    "tailwindcss": "catalog:",
     "typescript": "5.5.4",
     "vite": "^5.1.4",
     "vite-plugin-turbosnap": "^1.0.3"

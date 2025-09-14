@@ -4,6 +4,6 @@ export default defineConfig((options) => ({
   entry: ["src/index.tsx"],
   format: ["cjs", "esm"],
   dts: true,
-  external: ["react"],
+  external: ["react", "react-dom"],
   ...options,
 }));
