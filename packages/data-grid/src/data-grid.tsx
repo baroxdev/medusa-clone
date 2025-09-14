@@ -17,6 +17,7 @@ import { DataGridContext } from "./context/data-grid-context";
 import { useDataGridKeydownEvent } from "./hooks/use-data-grid-keydown-event";
 import { useDataGridQueryTool } from "./hooks/use-data-grid-query-tool";
 import { DataGridMaxtrix } from "./models/data-grid-matrix";
+import { DataGridBooleanCell } from "./components/data-grid-boolean-cell";
 
 export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
   children?: React.ReactNode;
@@ -48,7 +49,7 @@ const columns = [
     id: "second",
     accessorKey: "second",
     cell: (context: CellContext<any, any>) => (
-      <DataGridTextCell context={context} />
+      <DataGridBooleanCell context={context} />
     ),
   },
   {
@@ -258,4 +259,5 @@ const _DataGrid = ({ ...props }: DataGridRootProps) => {
 
 export const DataGrid = Object.assign(_DataGrid, {
   TextCell: DataGridTextCell,
+  BooleanCell: DataGridBooleanCell,
 });

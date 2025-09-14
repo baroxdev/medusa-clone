@@ -87,8 +87,6 @@ export const useDataGridKeydownEvent = <TData, TValue>({
 
   const handleEnterKey = useCallback(
     (e: KeyboardEvent) => {
-      console.log("[EVENT] Enter key");
-      // check if the anchor is editing
       if (!anchor) {
         return;
       }
@@ -100,8 +98,25 @@ export const useDataGridKeydownEvent = <TData, TValue>({
     [matrix, anchor, handleEnterKeyTextOrNumber]
   );
 
+  const handleTabKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (!anchor) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+
+      const direction = e.shiftKey ? "ArrowLeft" : "ArrowRight";
+      const pos = matrix.getValidMovement(anchor.row, anchor.col, direction);
+
+      setSingleRange(pos);
+    },
+    [matrix, anchor, setSingleRange]
+  );
+
   const handleKeyDownEvent = useCallback(
     (e: KeyboardEvent) => {
+      console.log({ key: e.key });
       switch (true) {
         case ARROW_KEYS.includes(e.key):
           handleKeyboardNavigation(e);
@@ -109,9 +124,12 @@ export const useDataGridKeydownEvent = <TData, TValue>({
         case e.key === "Enter":
           handleEnterKey(e);
           return;
+        case e.key === "Tab":
+          handleTabKey(e);
+          return;
       }
     },
-    [handleKeyboardNavigation, handleEnterKey]
+    [handleKeyboardNavigation, handleEnterKey, handleTabKey]
   );
 
   return {
