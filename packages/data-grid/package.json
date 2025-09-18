@@ -30,7 +30,8 @@
   },
   "dependencies": {
     "@tanstack/react-table": "^8.21.3",
-    "react": "catalog:"
+    "react": "catalog:",
+    "react-currency-input-field": "^4.0.1"
   },
   "publishConfig": {
     "access": "public"
