@@ -9,6 +9,7 @@ import { DataGridCellContainer } from "./data-grid-cell-container";
 import { DataGridCellProps, InputProps } from "./types";
 import { useCombinedRefs } from "../hooks/use-combined-refs";
 import { useCallback, useEffect, useState } from "react";
+import { cn } from "@medusa-clone/ui";
 
 export const DataGridCurrencyCell = <TData, TValue>({
   context,
@@ -69,6 +70,11 @@ const Inner = ({ inputProps }: { inputProps: InputProps }) => {
   return (
     <CurrencyInput
       {...rest}
+      className={cn(
+        "text-sm text-[#52525B] cursor-default bg-transparent text-right outline-none"
+        // NOTE: commented them because I'm not sure why these styles are neccessary.
+        // "w-full flex-1 appearance-none"
+      )}
       onValueChange={handleValueChange}
       value={localValue || undefined}
       ref={combinedRef}
