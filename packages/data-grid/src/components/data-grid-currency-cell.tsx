@@ -1,10 +1,14 @@
-import { CurrencyInput, CurrencyInputProps } from "react-currency-input-field";
+import {
+  CurrencyInput,
+  CurrencyInputProps,
+  formatValue,
+} from "react-currency-input-field";
 
 import { useDataGridCell } from "../hooks/use-data-grid-cell";
 import { DataGridCellContainer } from "./data-grid-cell-container";
 import { DataGridCellProps, InputProps } from "./types";
 import { useCombinedRefs } from "../hooks/use-combined-refs";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export const DataGridCurrencyCell = <TData, TValue>({
   context,
@@ -22,9 +26,18 @@ export const DataGridCurrencyCell = <TData, TValue>({
 };
 
 const Inner = ({ inputProps }: { inputProps: InputProps }) => {
-  const { ref, value, onFocus, onBlur, onChange } = inputProps;
-
-  const [localValue, setLocalValue] = useState<string | number>(value || "");
+  const { value, ref, onFocus, onBlur, onChange, ...rest } = inputProps;
+  const formatter = useCallback((value?: string | number) => {
+    const ensuredValue =
+      typeof value === "number" ? value.toString() : value || "";
+    return formatValue({
+      value: ensuredValue,
+      disableGroupSeparators: true,
+      decimalSeparator: ".",
+    });
+  }, []);
+  //   TODO: not init with value yet
+  const [localValue, setLocalValue] = useState<string | number>("");
 
   const handleValueChange: CurrencyInputProps["onValueChange"] = (
     value,
@@ -39,9 +52,23 @@ const Inner = ({ inputProps }: { inputProps: InputProps }) => {
     setLocalValue(value);
   };
 
+  //   NOTE: What will happen without this useEffect?
+  //   ASSUMPTION: maybe not sync the value from react-hook-form to the internal
+  //   useEffect(() => {
+  //     let update = value;
+
+  //     if (!isNaN(Number(value))) {
+  //       update = formatter(value);
+  //     }
+
+  //     setLocalValue(update);
+  //     console.log({ update });
+  //   }, [value, formatter]);
+
   const combinedRef = useCombinedRefs(ref);
   return (
     <CurrencyInput
+      {...rest}
       onValueChange={handleValueChange}
       value={localValue || undefined}
       ref={combinedRef}

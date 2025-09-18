@@ -44,7 +44,7 @@ const EXAMPLE_DATA = Array.from({ length: 200 }).map((_, i) => ({
   id: i,
   first: `first ${i}`,
   second: `second ${i}`,
-  second_2: `second ${i}`,
+  second_2: ``,
   third: `third ${i}`,
 }));
 
@@ -86,7 +86,7 @@ const columns: ColumnDef<(typeof EXAMPLE_DATA)[number]>[] = [
       <DataGrid.CurrencyCell context={context} />
     ),
     meta: {
-      type: "currency",
+      type: "number",
     },
   },
   {
