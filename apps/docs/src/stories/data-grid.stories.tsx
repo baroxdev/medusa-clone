@@ -11,6 +11,10 @@ type Story = StoryObj<typeof DataGrid>;
 
 export const Default: Story = {
   render: () => {
-    return <DataGrid />;
+    return (
+      <div className="flex size-full flex-col overflow-hidden">
+        <DataGrid />
+      </div>
+    );
   },
 };

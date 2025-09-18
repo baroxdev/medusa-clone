@@ -70,7 +70,7 @@ export type GridCell = {
 };
 
 export type Grid = (GridCell | null)[][];
-export type DataGridColumnType = "text" | "boolean";
+export type DataGridColumnType = "text" | "boolean" | "number";
 
 export type InternalColumnMeta<TData, TValue> = {
   name: string;

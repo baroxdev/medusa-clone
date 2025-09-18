@@ -104,6 +104,7 @@ export const useDataGridKeydownEvent = <TData, TValue>({
 
       switch (type) {
         case "text":
+        case "number":
           handleEnterKeyTextOrNumber(e, anchor);
           break;
         case "boolean":
