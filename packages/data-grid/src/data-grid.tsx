@@ -1,11 +1,13 @@
 import {
   CellContext,
+  Column,
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import React, {
+  CSSProperties,
   useCallback,
   useEffect,
   useMemo,
@@ -22,6 +24,19 @@ import { DataGridBooleanCell } from "./components/data-grid-boolean-cell";
 
 export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
   children?: React.ReactNode;
+};
+
+const getCommonPinningStyles = <TDataValue,>(
+  column: Column<TDataValue>
+): CSSProperties => {
+  const isPinned = column.getIsPinned();
+  return {
+    position: isPinned ? "sticky" : "relative",
+    width: column.getSize(),
+    zIndex: isPinned ? 1 : 0,
+    left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
+    right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
+  };
 };
 
 const EXAMPLE_DATA = Array.from({ length: 20 }).map((_, i) => ({
@@ -92,6 +107,11 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
       maxSize: 400,
     },
     getCoreRowModel: getCoreRowModel(),
+    initialState: {
+      columnPinning: {
+        left: [columns[0].id!],
+      },
+    },
   });
 
   const { flatRows } = grid.getRowModel();
@@ -103,8 +123,6 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   );
 
   const queryTool = useDataGridQueryTool(containerRef);
-
-  console.log({ queryTool });
 
   const onEditingChangeHandler = useCallback(
     (value: boolean) => {
@@ -176,8 +194,8 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
               ref={containerRef}
               className="relative h-full overflow-auto outline-none "
             >
-              <div role={"grid"} className="grid">
-                <div role="rowgroup" className="grid">
+              <div role="grid" className="grid">
+                <div role="rowgroup" className="grid sticky top-0 z-[1]">
                   {grid.getHeaderGroups().map((headerGroup, _i) => {
                     return (
                       <div
@@ -193,6 +211,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                               className="flex items-center font-medium px-4 py-2.5 bg-white border-b border-t text-[#52525B] text-sm border-r border-[#e4e4e7]"
                               style={{
                                 width: header.getSize(),
+                                ...getCommonPinningStyles(header.column),
                               }}
                             >
                               {header.isPlaceholder
@@ -235,6 +254,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                               data-column-index={columnIndex}
                               style={{
                                 width: cell.column.getSize(),
+                                ...getCommonPinningStyles(cell.column),
                               }}
                               className="flex items-center border-b border-r border-[#e4e4e7] p-0 outline-none"
                               // Note: Don't know why need this
