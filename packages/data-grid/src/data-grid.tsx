@@ -184,19 +184,33 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
       );
 
       // NOTE: comment because don't understand why need these line
-      // if (anchor && visibleRows[anchor.row]) {
-      //   toRender.add(anchor.row);
+      // if (anchor && visibleColumns[anchor.col]) {
+      //   toRender.add(anchor.col);
       // }
 
-      // if (_rangeEnd && visibleRows[_rangeEnd.row]) {
-      //   toRender.add(_rangeEnd.row)
+      // if (_rangeEnd && visibleColumns[_rangeEnd.col]) {
+      //   toRender.add(_rangeEnd.col)
       // }
+
+      // The first column is pinned, so we always render it
+      // QUESTION: What happen if we not pin the first one? Does this line not dynamic enough?
+      toRender.add(0);
 
       return Array.from(toRender).sort((a, b) => a - b);
     },
   });
 
   const virtualColumns = columnVirtualizer.getVirtualItems();
+
+  let virtualPaddingLeft: number | undefined;
+  let virtualPaddingRight: number | undefined;
+
+  if (columnVirtualizer && virtualColumns?.length) {
+    virtualPaddingLeft = virtualColumns[0]?.start ?? 0;
+    virtualPaddingRight =
+      columnVirtualizer.getTotalSize() -
+      (virtualColumns[virtualColumns.length - 1]?.end ?? 0);
+  }
 
   const matrix = useMemo(
     () => new DataGridMaxtrix(flatRows, columns),
@@ -263,8 +277,6 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
     ]
   );
 
-  console.log({ virtualColumns });
-
   return (
     <DataGridContext.Provider value={values}>
       <div className="bg-[#fafafa] flex flex-col size-full">
@@ -285,6 +297,15 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                       className={"flex h-10 w-full"}
                       key={headerGroup.id}
                     >
+                      {virtualPaddingLeft ? (
+                        <div
+                          role="presentation"
+                          style={{
+                            display: "flex",
+                            width: virtualPaddingLeft,
+                          }}
+                        />
+                      ) : null}
                       {virtualColumns.reduce((acc, vc, index, array) => {
                         const header = headerGroup.headers[vc.index];
                         const previousVC = array[index - 1];
@@ -324,6 +345,15 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
 
                         return acc;
                       }, [] as React.ReactNode[])}
+                      {virtualPaddingRight ? (
+                        <div
+                          role="presentation"
+                          style={{
+                            display: "flex",
+                            width: virtualPaddingRight,
+                          }}
+                        />
+                      ) : null}
                       {/* {headerGroup.headers.map((header) => {
                         return (
                           <div
