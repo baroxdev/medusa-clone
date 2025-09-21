@@ -10,13 +10,16 @@
     "lint": "eslint src/stories/*.stories.tsx --max-warnings 0"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@medusa-clone/data-grid": "workspace:*",
     "@medusa-clone/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.1.12",
     "@tailwindcss/vite": "^4.1.12",
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
-    "react": "^18.2.0"
+    "react": "^18.2.0",
+    "react-hook-form": "^7.63.0",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@medusa-clone/typescript-config": "workspace:*",

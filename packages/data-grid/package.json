@@ -32,7 +32,8 @@
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.12",
     "react": "catalog:",
-    "react-currency-input-field": "^4.0.1"
+    "react-currency-input-field": "^4.0.1",
+    "react-hook-form": "^7.63.0"
   },
   "publishConfig": {
     "access": "public"

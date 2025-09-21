@@ -23,11 +23,18 @@ import { DataGridMaxtrix } from "./models/data-grid-matrix";
 import { DataGridBooleanCell } from "./components/data-grid-boolean-cell";
 import { DataGridCurrencyCell } from "./components/data-grid-currency-cell";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { FieldValues, UseFormReturn } from "react-hook-form";
 
 const ROW_HEIGHT = 40;
-export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
+export interface DataGridRootProps<
+  TData,
+  TFieldValues extends FieldValues = FieldValues,
+> extends React.ComponentPropsWithoutRef<"div"> {
+  data?: TData[];
+  columns: ColumnDef<TData>[];
   children?: React.ReactNode;
-};
+  state: UseFormReturn<TFieldValues>;
+}
 
 const getCommonPinningStyles = <TDataValue,>(
   column: Column<TDataValue>
@@ -42,69 +49,21 @@ const getCommonPinningStyles = <TDataValue,>(
   };
 };
 
-const EXAMPLE_DATA = Array.from({ length: 20000 }).map((_, i) => ({
-  id: i,
-  first: `first ${i}`,
-  second: `second ${i}`,
-  second_2: ``,
-  third: `third ${i}`,
-}));
-
-const columns: ColumnDef<(typeof EXAMPLE_DATA)[number]>[] = [
-  {
-    id: "id",
-    accessorKey: "id",
-    cell: (context: CellContext<any, any>) => (
-      <DataGrid.TextCell context={context} />
-    ),
-    meta: {
-      type: "text",
-    },
-  },
-  {
-    id: "first",
-    accessorKey: "first",
-    cell: (context: CellContext<any, any>) => (
-      <DataGrid.TextCell context={context} />
-    ),
-    meta: {
-      type: "text",
-    },
-  },
-  {
-    id: "second",
-    accessorKey: "second",
-    cell: (context: CellContext<any, any>) => (
-      <DataGrid.BooleanCell context={context} />
-    ),
-    meta: {
-      type: "boolean",
-    },
-  },
-  {
-    id: "second_2",
-    accessorKey: "second_2",
-    cell: (context: CellContext<any, any>) => (
-      <DataGrid.CurrencyCell context={context} />
-    ),
-    meta: {
-      type: "number",
-    },
-  },
-  {
-    id: "third",
-    accessorKey: "third",
-    cell: (context: CellContext<any, any>) => (
-      <DataGrid.TextCell context={context} />
-    ),
-    meta: {
-      type: "text",
-    },
-  },
-];
-
-const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
+const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
+  data = [],
+  columns,
+  state,
+}: DataGridRootProps<TData, TFieldValues>) => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const {
+    register,
+    control,
+    getValues,
+    setValue,
+    formState: { errors },
+  } = state;
+
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
   const [_rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
     null
@@ -114,7 +73,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   const [_isSelecting, setIsSelecting] = useState(false);
 
   const grid = useReactTable({
-    data: EXAMPLE_DATA,
+    data: data,
     columns: columns,
     defaultColumn: {
       size: 200,
@@ -263,17 +222,23 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   const values = useMemo(
     () => ({
       anchor,
+      errors,
       setIsEditing: onEditingChangeHandler,
       setIsSelecting,
       setSingleRange,
+      register,
+      control,
       getWrapperFocusHandler,
     }),
     [
       anchor,
+      errors,
       onEditingChangeHandler,
       setIsSelecting,
       setSingleRange,
       getWrapperFocusHandler,
+      register,
+      control,
     ]
   );
 
@@ -311,10 +276,12 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                         const previousVC = array[index - 1];
 
                         if (previousVC && vc.index !== previousVC.index + 1) {
+                          // Stimulate the hidden column between two visible columns
                           acc.push(
                             <div
                               key={`padding-${previousVC.index}-${vc.index}`}
                               role="presentation"
+                              data-key={`padding-${previousVC.index}-${vc.index}`}
                               style={{
                                 display: "flex",
                                 width: `${vc.start - previousVC.end}px`,
@@ -398,7 +365,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                       style={{
                         transform: `translateY(${virtualRow.start}px)`,
                       }}
-                      className="flex h-10 flex w-full absolute"
+                      className="flex h-10 w-full absolute"
                     >
                       {visibleCells.map((cell) => {
                         const column = cell.column;
@@ -446,7 +413,9 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
 
 DataGridRoot.displayName = "DataGrid";
 
-const _DataGrid = ({ ...props }: DataGridRootProps) => {
+const _DataGrid = <TData, TFieldValues extends FieldValues = FieldValues>({
+  ...props
+}: DataGridRootProps<TData, TFieldValues>) => {
   return <DataGridRoot {...props} />;
 };
 
