@@ -42,7 +42,7 @@ const getCommonPinningStyles = <TDataValue,>(
   };
 };
 
-const EXAMPLE_DATA = Array.from({ length: 200 }).map((_, i) => ({
+const EXAMPLE_DATA = Array.from({ length: 20000 }).map((_, i) => ({
   id: i,
   first: `first ${i}`,
   second: `second ${i}`,
