@@ -130,6 +130,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
 
   const { flatRows } = grid.getRowModel();
   const visibleRows = flatRows;
+  const visibleColumns = grid.getVisibleLeafColumns();
   const flatColumns = grid.getAllFlatColumns();
 
   const rowVirtualizer = useVirtualizer({
@@ -138,7 +139,6 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
     getScrollElement: () => containerRef.current,
     overscan: 5,
     rangeExtractor: (range) => {
-      console.log({ range });
       const toRender = new Set(
         Array.from(
           { length: range.endIndex - range.startIndex + 1 },
@@ -146,16 +146,58 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
         )
       );
 
-      if (anchor && visibleRows[anchor.row]) {
-        toRender.add(anchor.row);
-      }
+      // NOTE: comment because don't understand why need these line
+      // if (anchor && visibleRows[anchor.row]) {
+      //   toRender.add(anchor.row);
+      // }
+
+      // if (_rangeEnd && visibleRows[_rangeEnd.row]) {
+      //   toRender.add(_rangeEnd.row)
+      // }
 
       return Array.from(toRender).sort((a, b) => a - b); // current sort direction is ascending
     },
   });
 
   const virtualRows = rowVirtualizer.getVirtualItems();
-  console.log({ virtualRows, rowVirtualizer });
+
+  const columnVirtualizer = useVirtualizer({
+    count: visibleColumns.length,
+    estimateSize: (index) => visibleColumns[index].getSize(),
+    getScrollElement: () => containerRef.current,
+    horizontal: true,
+
+    // What?
+    overscan: 3,
+
+    rangeExtractor: (range) => {
+      const startIndex = range.startIndex;
+      const endIndex = range.endIndex;
+
+      const toRender = new Set(
+        Array.from(
+          {
+            length: endIndex - startIndex + 1,
+          },
+          (_, i) => startIndex + i
+        )
+      );
+
+      // NOTE: comment because don't understand why need these line
+      // if (anchor && visibleRows[anchor.row]) {
+      //   toRender.add(anchor.row);
+      // }
+
+      // if (_rangeEnd && visibleRows[_rangeEnd.row]) {
+      //   toRender.add(_rangeEnd.row)
+      // }
+
+      return Array.from(toRender).sort((a, b) => a - b);
+    },
+  });
+
+  const virtualColumns = columnVirtualizer.getVirtualItems();
+
   const matrix = useMemo(
     () => new DataGridMaxtrix(flatRows, columns),
     [flatRows, columns]
@@ -221,6 +263,8 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
     ]
   );
 
+  console.log({ virtualColumns });
+
   return (
     <DataGridContext.Provider value={values}>
       <div className="bg-[#fafafa] flex flex-col size-full">
@@ -234,14 +278,53 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
           >
             <div role="grid" className="grid">
               <div role="rowgroup" className="grid sticky top-0 z-[1]">
-                {grid.getHeaderGroups().map((headerGroup, _i) => {
+                {grid.getHeaderGroups().map((headerGroup) => {
                   return (
                     <div
                       role={"row"}
                       className={"flex h-10 w-full"}
                       key={headerGroup.id}
                     >
-                      {headerGroup.headers.map((header) => {
+                      {virtualColumns.reduce((acc, vc, index, array) => {
+                        const header = headerGroup.headers[vc.index];
+                        const previousVC = array[index - 1];
+
+                        if (previousVC && vc.index !== previousVC.index + 1) {
+                          acc.push(
+                            <div
+                              key={`padding-${previousVC.index}-${vc.index}`}
+                              role="presentation"
+                              style={{
+                                display: "flex",
+                                width: `${vc.start - previousVC.end}px`,
+                              }}
+                            />
+                          );
+                        }
+
+                        acc.push(
+                          <div
+                            key={header.id}
+                            role="columnheader"
+                            data-column-index={vc.index}
+                            className="flex items-center font-medium px-4 py-2.5 bg-white border-b border-t text-[#52525B] text-sm border-r border-[#e4e4e7]"
+                            style={{
+                              width: header.getSize(),
+                              ...getCommonPinningStyles(header.column),
+                            }}
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </div>
+                        );
+
+                        return acc;
+                      }, [] as React.ReactNode[])}
+                      {/* {headerGroup.headers.map((header) => {
                         return (
                           <div
                             role="columnheader"
@@ -260,7 +343,7 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                                 )}
                           </div>
                         );
-                      })}
+                      })} */}
                     </div>
                   );
                 })}
