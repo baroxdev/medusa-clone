@@ -22,7 +22,9 @@ import { useDataGridQueryTool } from "./hooks/use-data-grid-query-tool";
 import { DataGridMaxtrix } from "./models/data-grid-matrix";
 import { DataGridBooleanCell } from "./components/data-grid-boolean-cell";
 import { DataGridCurrencyCell } from "./components/data-grid-currency-cell";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
+const ROW_HEIGHT = 40;
 export type DataGridRootProps = React.ComponentPropsWithoutRef<"div"> & {
   children?: React.ReactNode;
 };
@@ -129,6 +131,31 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
   const { flatRows } = grid.getRowModel();
   const visibleRows = flatRows;
   const flatColumns = grid.getAllFlatColumns();
+
+  const rowVirtualizer = useVirtualizer({
+    count: visibleRows.length,
+    estimateSize: () => ROW_HEIGHT,
+    getScrollElement: () => containerRef.current,
+    overscan: 5,
+    rangeExtractor: (range) => {
+      console.log({ range });
+      const toRender = new Set(
+        Array.from(
+          { length: range.endIndex - range.startIndex + 1 },
+          (_, i) => range.startIndex + i
+        )
+      );
+
+      if (anchor && visibleRows[anchor.row]) {
+        toRender.add(anchor.row);
+      }
+
+      return Array.from(toRender).sort((a, b) => a - b); // current sort direction is ascending
+    },
+  });
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  console.log({ virtualRows, rowVirtualizer });
   const matrix = useMemo(
     () => new DataGridMaxtrix(flatRows, columns),
     [flatRows, columns]
@@ -238,17 +265,27 @@ const DataGridRoot: React.FC<DataGridRootProps> = ({ ...props }) => {
                   );
                 })}
               </div>
-              <div role="rowgroup" className="relative grid">
-                {visibleRows.map((row, _i) => {
-                  const rowIndex = row.index;
+              <div
+                role="rowgroup"
+                className="relative grid"
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                }}
+              >
+                {virtualRows.map((virtualRow) => {
+                  const row = visibleRows[virtualRow.index];
+                  const rowIndex = flatRows.findIndex((r) => r.id === row.id);
                   const visibleCells = row.getVisibleCells();
 
                   return (
                     <div
                       key={row.id}
                       role="row"
-                      aria-rowindex={rowIndex}
-                      className="flex h-10 w-full"
+                      aria-rowindex={virtualRow.index}
+                      style={{
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                      className="flex h-10 flex w-full absolute"
                     >
                       {visibleCells.map((cell) => {
                         const column = cell.column;
