@@ -72,7 +72,7 @@ export type GridCell = {
 export type Grid = (GridCell | null)[][];
 export type DataGridColumnType = "text" | "boolean" | "number";
 
-export type InternalColumnMeta<TData, TValue> = {
+export type InternalColumnMeta<TData> = {
   name: string;
   field?: string;
 } & (
