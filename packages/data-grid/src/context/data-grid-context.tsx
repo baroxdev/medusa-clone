@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { DataGridCoordinatesType } from "../components/types";
+import { CellMetadata, DataGridCoordinatesType } from "../components/types";
 import {
   Control,
   FieldErrors,
@@ -25,6 +25,7 @@ type DataGridContextType<TFieldValues extends FieldValues> = {
   getWrapperFocusHandler: (
     coordinates: DataGridCoordinatesType
   ) => (e: React.FocusEvent<HTMLElement>) => void;
+  getCellMetadata: (coordinates: DataGridCoordinatesType) => CellMetadata;
 };
 
 export const DataGridContext = createContext<DataGridContextType<any> | null>(

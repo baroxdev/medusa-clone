@@ -3,6 +3,7 @@ import { DataGrid } from "@medusa-clone/data-grid";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ColumnDef } from "@tanstack/react-table";
 
 const meta: Meta<typeof DataGrid> = {
   component: DataGrid,
@@ -12,7 +13,7 @@ export default meta;
 
 type Story = StoryObj<typeof DataGrid>;
 
-const EXAMPLE_DATA = Array.from({ length: 200 }).map((_, i) => ({
+const EXAMPLE_DATA = Array.from({ length: 20 }).map((_, i) => ({
   id: i,
   first: `first ${i}`,
   second: `second ${i}`,
@@ -27,13 +28,17 @@ const EXAMPLE_DATA = Array.from({ length: 200 }).map((_, i) => ({
   ten: `ten ${i}`,
 }));
 
-const columns = [
+const columns: ColumnDef<any>[] = [
   {
     id: "id",
     accessorKey: "id",
     cell: (context) => <DataGrid.TextCell context={context} />,
     meta: {
       type: "text",
+      field: (context) => {
+        console.log({ context });
+        return `data.${context.row.index}.id`;
+      },
     },
   },
   {
@@ -42,6 +47,10 @@ const columns = [
     cell: (context) => <DataGrid.TextCell context={context} />,
     meta: {
       type: "text",
+      field: (context) => {
+        console.log({ context });
+        return `data.${context.row.index}.first`;
+      },
     },
   },
   {
@@ -50,6 +59,10 @@ const columns = [
     cell: (context) => <DataGrid.BooleanCell context={context} />,
     meta: {
       type: "boolean",
+      field: (context) => {
+        console.log({ context });
+        return `data.${context.row.index}.first`;
+      },
     },
   },
   {
@@ -58,6 +71,10 @@ const columns = [
     cell: (context) => <DataGrid.CurrencyCell context={context} />,
     meta: {
       type: "number",
+      field: (context) => {
+        console.log({ context });
+        return `data.${context.row.index}.first`;
+      },
     },
   },
   {
@@ -66,6 +83,10 @@ const columns = [
     cell: (context) => <DataGrid.TextCell context={context} />,
     meta: {
       type: "text",
+      field: (context) => {
+        console.log({ context });
+        return `data.${context.row.index}.first`;
+      },
     },
   },
   {
@@ -74,6 +95,10 @@ const columns = [
     cell: (context) => <DataGrid.TextCell context={context} />,
     meta: {
       type: "text",
+      field: (context) => {
+        console.log({ context });
+        return `data.${context.row.index}.first`;
+      },
     },
   },
   {
@@ -82,6 +107,10 @@ const columns = [
     cell: (context) => <DataGrid.TextCell context={context} />,
     meta: {
       type: "text",
+      field: (context) => {
+        console.log({ context });
+        return `data.${context.row.index}.first`;
+      },
     },
   },
   {
@@ -90,38 +119,10 @@ const columns = [
     cell: (context) => <DataGrid.TextCell context={context} />,
     meta: {
       type: "text",
-    },
-  },
-  {
-    id: "seven",
-    accessorKey: "seven",
-    cell: (context) => <DataGrid.TextCell context={context} />,
-    meta: {
-      type: "text",
-    },
-  },
-  {
-    id: "eight",
-    accessorKey: "eight",
-    cell: (context) => <DataGrid.TextCell context={context} />,
-    meta: {
-      type: "text",
-    },
-  },
-  {
-    id: "nine",
-    accessorKey: "nine",
-    cell: (context) => <DataGrid.TextCell context={context} />,
-    meta: {
-      type: "text",
-    },
-  },
-  {
-    id: "ten",
-    accessorKey: "ten",
-    cell: (context) => <DataGrid.TextCell context={context} />,
-    meta: {
-      type: "text",
+      field: (context) => {
+        console.log({ context });
+        return `data.${context.row.index}.first`;
+      },
     },
   },
 ];
@@ -148,7 +149,12 @@ export const Default: Story = {
   render: () => {
     const form = useForm({
       resolver: zodResolver(basicSchema),
+      defaultValues: {
+        data: EXAMPLE_DATA,
+      },
     });
+
+    console.log({ values: form.getValues() });
     return (
       <div className="fixed inset-2 flex flex-col overflow-hidden">
         <form className="flex flex-col h-full">
