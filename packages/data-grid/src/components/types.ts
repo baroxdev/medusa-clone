@@ -1,5 +1,6 @@
-import { CellContext, ColumnMeta } from "@tanstack/react-table";
+import { CellContext, ColumnDef, ColumnMeta, Row } from "@tanstack/react-table";
 import React, { PropsWithChildren, ReactNode, RefObject } from "react";
+import { FieldPath, FieldValues } from "react-hook-form";
 
 export type DataGridDirection = string;
 
@@ -63,18 +64,27 @@ export type DataGridCoordinatesType = {
   col: number;
 };
 
-export type GridCell = {
-  field: string;
+export type GridCell<TFieldValues extends FieldValues> = {
+  field: FieldPath<TFieldValues>;
   type: DataGridColumnType;
   enabled: boolean;
 };
 
-export type Grid = (GridCell | null)[][];
+export type Grid<TFieldValues extends FieldValues> =
+  (GridCell<TFieldValues> | null)[][];
 export type DataGridColumnType = "text" | "boolean" | "number";
 
-export type InternalColumnMeta<TData> = {
+export type FieldContext<TData> = {
+  row: Row<TData>;
+  column: ColumnDef<TData>;
+};
+export type FieldFunction<TData, TFieldValues extends FieldValues> = (
+  context: FieldContext<TData>
+) => FieldPath<TFieldValues> | null;
+
+export type InternalColumnMeta<TData, TFieldValues extends FieldValues> = {
   name: string;
-  field?: string;
+  field?: FieldFunction<TData, TFieldValues>;
 } & (
   | {
       field: string;
@@ -86,3 +96,22 @@ export type InternalColumnMeta<TData> = {
     }
 ) &
   ColumnMeta<TData, any>;
+
+export type InputAttributes = {
+  "data-row": number;
+  "data-col": number;
+  "data-cell-id": string;
+  "data-field": string;
+};
+
+export type InnerAttributes = {
+  "data-container-id": string;
+};
+
+export type CellMetadata = {
+  id: string;
+  field: string;
+  type: DataGridColumnType;
+  inputAttributes: InputAttributes;
+  innerAttributes: InnerAttributes;
+};

@@ -6,12 +6,20 @@ import {
   Grid,
   InternalColumnMeta,
 } from "../components/types";
+import { FieldValues } from "react-hook-form";
 
-export class DataGridMaxtrix<TData> {
-  private cells: Grid;
+export class DataGridMaxtrix<TData, TFieldValues extends FieldValues> {
+  private cells: Grid<TFieldValues>;
 
   constructor(data: Row<TData>[], columns: ColumnDef<TData>[]) {
     this.cells = this._populateCells(data, columns);
+  }
+
+  getCellField(cell: DataGridCoordinatesType): string | null {
+    if (this._isValidPosition(cell.row, cell.col)) {
+      return this.cells[cell.row][cell.col]?.field || null;
+    }
+    return null;
   }
 
   getCellType(cell: DataGridCoordinatesType): DataGridColumnType | null {
@@ -69,7 +77,11 @@ export class DataGridMaxtrix<TData> {
     }
   }
 
-  private _isValidPosition(row: number, col: number, cells?: Grid): boolean {
+  private _isValidPosition(
+    row: number,
+    col: number,
+    cells?: Grid<TFieldValues>
+  ): boolean {
     if (!cells) {
       cells = this.cells;
     }
@@ -80,24 +92,37 @@ export class DataGridMaxtrix<TData> {
   private _populateCells(rows: Row<TData>[], columns: ColumnDef<TData>[]) {
     const cells = Array.from({ length: rows.length }, () =>
       Array(columns.length).fill(null)
-    ) as Grid;
+    ) as Grid<TFieldValues>;
 
-    rows.forEach((_row, rowIndex) => {
+    rows.forEach((row, rowIndex) => {
       columns.forEach((column, colIndex) => {
         if (!this._isValidPosition(rowIndex, colIndex, cells)) {
           return;
         }
 
-        const { type } = column.meta as InternalColumnMeta<TData, any>;
+        const { type, field, ...rest } = column.meta as InternalColumnMeta<
+          TData,
+          TFieldValues
+        >;
 
-        if (!type) {
+        const context = {
+          row,
+          column: {
+            ...column,
+            meta: rest,
+          },
+        };
+
+        const fieldValue = field ? field(context) : null;
+
+        if (!fieldValue || !type) {
           return;
         }
 
         cells[rowIndex][colIndex] = {
-          enabled: true,
+          field: fieldValue,
           type,
-          field: `field-${rowIndex}:${colIndex}`,
+          enabled: true,
         };
       });
     });

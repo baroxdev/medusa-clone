@@ -24,6 +24,8 @@ import { DataGridBooleanCell } from "./components/data-grid-boolean-cell";
 import { DataGridCurrencyCell } from "./components/data-grid-currency-cell";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { FieldValues, UseFormReturn } from "react-hook-form";
+import { useDataGridCellMetadata } from "./hooks/use-data-grid-cell-metadata";
+import { useDataGridCellHandlers } from "./hooks/use-data-grid-cell-handlers";
 
 const ROW_HEIGHT = 40;
 export interface DataGridRootProps<
@@ -63,7 +65,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     setValue,
     formState: { errors },
   } = state;
-
+  console.log({ formValues: getValues() });
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
   const [_rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
     null
@@ -170,7 +172,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       columnVirtualizer.getTotalSize() -
       (virtualColumns[virtualColumns.length - 1]?.end ?? 0);
   }
-
+  console.log({ flatRows });
   const matrix = useMemo(
     () => new DataGridMaxtrix(flatRows, columns),
     [flatRows, columns]
@@ -211,6 +213,14 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     onEditingChangeHandler,
   });
 
+  const { getInputChangeHandler } = useDataGridCellHandlers({
+    setValue,
+  });
+
+  const { getCellMetadata } = useDataGridCellMetadata({
+    matrix,
+  });
+
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDownEvent);
 
@@ -223,12 +233,14 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     () => ({
       anchor,
       errors,
+      control,
       setIsEditing: onEditingChangeHandler,
       setIsSelecting,
       setSingleRange,
       register,
-      control,
       getWrapperFocusHandler,
+      getCellMetadata,
+      getInputChangeHandler,
     }),
     [
       anchor,
@@ -239,6 +251,8 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       getWrapperFocusHandler,
       register,
       control,
+      getCellMetadata,
+      getInputChangeHandler,
     ]
   );
 

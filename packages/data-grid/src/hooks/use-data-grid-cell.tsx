@@ -1,3 +1,4 @@
+import { CellContext } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DataGridCellContext,
@@ -5,24 +6,29 @@ import {
   DataGridCoordinatesType,
 } from "../components/types";
 import { useDataGridContext } from "../context/use-data-grid-context";
-import { CellContext } from "@tanstack/react-table";
-import { generateCellId, isCellMatch } from "../lib/utils";
+import { isCellMatch } from "../lib/utils";
 
 type UseDataGridCellOptions<TData, TValue> = {
   context: CellContext<TData, TValue>;
 };
 
 const textCharacterRegex = /^.$/u;
+const numberCharacterRegex = /^[0-9]$/u;
 
 export const useDataGridCell = <TData, TValue>({
   context,
 }: UseDataGridCellOptions<TData, TValue>) => {
   const {
     anchor,
+    control,
+    errors,
+    register,
     getWrapperFocusHandler,
     setIsEditing,
     setSingleRange,
     setIsSelecting,
+    getCellMetadata,
+    getInputChangeHandler,
   } = useDataGridContext();
 
   const [showOverlay, setShowOverlay] = useState(true);
@@ -40,15 +46,18 @@ export const useDataGridCell = <TData, TValue>({
     [rowIndex, columnIndex]
   );
 
+  const { id, field, type, inputAttributes, innerAttributes } = useMemo(() => {
+    return getCellMetadata(coords);
+  }, [coords, getCellMetadata]);
+
+  const fieldWithoutOverlay = useMemo(() => {
+    return type === "boolean";
+  }, [type]);
+
   const handleOverlayMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-
-      console.log({
-        inputRef: inputRef.current,
-        containerRef: containerRef.current,
-      });
 
       if (e.detail === 2) {
         if (inputRef.current) {
@@ -78,9 +87,19 @@ export const useDataGridCell = <TData, TValue>({
     setShowOverlay(false);
   }, [setIsEditing]);
 
-  const validateKeyStroke = useCallback((key: string) => {
-    return textCharacterRegex.test(key);
-  }, []);
+  const validateKeyStroke = useCallback(
+    (key: string) => {
+      switch (type) {
+        case "number":
+          return numberCharacterRegex.test(key);
+        case "text":
+          return textCharacterRegex.test(key);
+        default:
+          return false;
+      }
+    },
+    [type]
+  );
 
   const handleContainerKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -89,22 +108,16 @@ export const useDataGridCell = <TData, TValue>({
         return;
       }
 
-      console.log({ showOverlay });
-
       if (!inputRef.current || !validateKeyStroke(e.key) || !showOverlay) {
         return;
       }
-      console.log({
-        inputRef: inputRef.current,
-        instanceof: inputRef.current instanceof HTMLInputElement,
-      });
+
       inputRef.current?.focus();
 
       // setShowOverlay(false) // NOTE?: Maybe Redundance setShowOverlay?
       if (inputRef.current instanceof HTMLInputElement) {
         // Clear the current value
         inputRef.current.value = "";
-        console.log({ window: window.HTMLInputElement.prototype });
 
         // WHY: use the nativeInputValueSetter and dispatch an event can reload the input?
         // ANSWER: https://stackoverflow.com/questions/23892547/what-is-the-best-way-to-trigger-change-or-input-event-in-react-js
@@ -131,20 +144,6 @@ export const useDataGridCell = <TData, TValue>({
     return anchor ? isCellMatch(anchor, coords) : false;
   }, [anchor, coords]);
 
-  const id = generateCellId(coords);
-
-  const inputAttributes = {
-    "data-row": coords.row,
-    "data-col": coords.col,
-    "data-cell-id": id,
-    "data-field": context.cell.column.id,
-    name: id,
-  };
-
-  const innerAttributes = {
-    "data-container-id": id,
-  };
-
   // NOTE: automatically focus on the container of the cell when moving to another cell.
   useEffect(() => {
     if (isAnchor) {
@@ -154,11 +153,11 @@ export const useDataGridCell = <TData, TValue>({
 
   const renderProps: DataGridCellRenderProps = {
     container: {
-      field: context.cell.column.id,
+      field: field,
       isAnchor: isAnchor,
       isSelected: false,
       isDragSelected: false,
-      showOverlay: showOverlay,
+      showOverlay: fieldWithoutOverlay ? false : showOverlay,
       innerProps: {
         ref: containerRef,
         onFocus: getWrapperFocusHandler(coords),
@@ -175,16 +174,15 @@ export const useDataGridCell = <TData, TValue>({
       ref: inputRef,
       onBlur: handleInputBlur,
       onFocus: handleInputFocus,
-      onChange: () => {},
-      value: context.cell.getValue() as string,
+      onChange: getInputChangeHandler(field),
       ...inputAttributes,
     },
   };
   return {
-    id: generateCellId(coords),
-    // field,
-    // register,
-    // control,
+    id,
+    field,
+    register,
+    control,
     renderProps,
   };
 };

@@ -2,11 +2,12 @@ import { useCallback } from "react";
 import { DataGridCoordinatesType } from "../components/types";
 import { DataGridMaxtrix } from "../models/data-grid-matrix";
 import { DataGridQueryTool } from "../models/data-grid-query-tool";
+import { FieldValues } from "react-hook-form";
 
 const ARROW_KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 const VERTICAL_KEYS = ["ArrowUp", "ArrowDown"];
-type UseDataGridKeydownEventOptions<TData, TValue> = {
-  matrix: DataGridMaxtrix<TData>;
+type UseDataGridKeydownEventOptions<TData, TFieldValues extends FieldValues> = {
+  matrix: DataGridMaxtrix<TData, TFieldValues>;
   anchor: DataGridCoordinatesType | null;
   queryTool: DataGridQueryTool | null;
   isEditing: boolean;
@@ -15,14 +16,17 @@ type UseDataGridKeydownEventOptions<TData, TValue> = {
   onEditingChangeHandler: (value: boolean) => void;
 };
 
-export const useDataGridKeydownEvent = <TData, TValue>({
+export const useDataGridKeydownEvent = <
+  TData,
+  TFieldValues extends FieldValues,
+>({
   isEditing,
   matrix,
   anchor,
   queryTool,
   setSingleRange,
   onEditingChangeHandler,
-}: UseDataGridKeydownEventOptions<TData, TValue>) => {
+}: UseDataGridKeydownEventOptions<TData, TFieldValues>) => {
   const handleKeyboardNavigation = useCallback(
     (e: KeyboardEvent) => {
       const direction = VERTICAL_KEYS.includes(e.key)
