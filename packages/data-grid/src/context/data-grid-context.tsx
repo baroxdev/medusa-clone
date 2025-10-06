@@ -25,6 +25,7 @@ type DataGridContextType<TFieldValues extends FieldValues> = {
   getWrapperFocusHandler: (
     coordinates: DataGridCoordinatesType
   ) => (e: React.FocusEvent<HTMLElement>) => void;
+  getInputChangeHandler: (field: any) => void;
   getCellMetadata: (coordinates: DataGridCoordinatesType) => CellMetadata;
 };
 

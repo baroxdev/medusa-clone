@@ -45,7 +45,7 @@ const Inner = ({
     ...input
   } = inputProps;
   const [localValue, setLocalValue] = useState(value);
-  console.log({ localValue, value, rest });
+
   useEffect(() => {
     setLocalValue(value);
   }, [value]);

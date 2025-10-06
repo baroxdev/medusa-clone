@@ -13,7 +13,7 @@ export default meta;
 
 type Story = StoryObj<typeof DataGrid>;
 
-const EXAMPLE_DATA = Array.from({ length: 20 }).map((_, i) => ({
+const EXAMPLE_DATA = Array.from({ length: 30 }).map((_, i) => ({
   id: i,
   first: `first ${i}`,
   second: `second ${i}`,
@@ -61,7 +61,7 @@ const columns: ColumnDef<any>[] = [
       type: "boolean",
       field: (context) => {
         console.log({ context });
-        return `data.${context.row.index}.first`;
+        return `data.${context.row.index}.second`;
       },
     },
   },
@@ -73,7 +73,7 @@ const columns: ColumnDef<any>[] = [
       type: "number",
       field: (context) => {
         console.log({ context });
-        return `data.${context.row.index}.first`;
+        return `data.${context.row.index}.second_2`;
       },
     },
   },
@@ -85,7 +85,7 @@ const columns: ColumnDef<any>[] = [
       type: "text",
       field: (context) => {
         console.log({ context });
-        return `data.${context.row.index}.first`;
+        return `data.${context.row.index}.third`;
       },
     },
   },
@@ -97,7 +97,7 @@ const columns: ColumnDef<any>[] = [
       type: "text",
       field: (context) => {
         console.log({ context });
-        return `data.${context.row.index}.first`;
+        return `data.${context.row.index}.four`;
       },
     },
   },
@@ -109,7 +109,7 @@ const columns: ColumnDef<any>[] = [
       type: "text",
       field: (context) => {
         console.log({ context });
-        return `data.${context.row.index}.first`;
+        return `data.${context.row.index}.five`;
       },
     },
   },
@@ -121,7 +121,7 @@ const columns: ColumnDef<any>[] = [
       type: "text",
       field: (context) => {
         console.log({ context });
-        return `data.${context.row.index}.first`;
+        return `data.${context.row.index}.six`;
       },
     },
   },

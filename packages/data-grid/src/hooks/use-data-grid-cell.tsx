@@ -28,6 +28,7 @@ export const useDataGridCell = <TData, TValue>({
     setSingleRange,
     setIsSelecting,
     getCellMetadata,
+    getInputChangeHandler,
   } = useDataGridContext();
 
   const [showOverlay, setShowOverlay] = useState(true);
@@ -173,7 +174,7 @@ export const useDataGridCell = <TData, TValue>({
       ref: inputRef,
       onBlur: handleInputBlur,
       onFocus: handleInputFocus,
-      onChange: () => {},
+      onChange: getInputChangeHandler(field),
       ...inputAttributes,
     },
   };

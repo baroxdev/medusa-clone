@@ -25,6 +25,7 @@ import { DataGridCurrencyCell } from "./components/data-grid-currency-cell";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { FieldValues, UseFormReturn } from "react-hook-form";
 import { useDataGridCellMetadata } from "./hooks/use-data-grid-cell-metadata";
+import { useDataGridCellHandlers } from "./hooks/use-data-grid-cell-handlers";
 
 const ROW_HEIGHT = 40;
 export interface DataGridRootProps<
@@ -64,7 +65,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     setValue,
     formState: { errors },
   } = state;
-
+  console.log({ formValues: getValues() });
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
   const [_rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
     null
@@ -212,6 +213,10 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     onEditingChangeHandler,
   });
 
+  const { getInputChangeHandler } = useDataGridCellHandlers({
+    setValue,
+  });
+
   const { getCellMetadata } = useDataGridCellMetadata({
     matrix,
   });
@@ -235,6 +240,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       register,
       getWrapperFocusHandler,
       getCellMetadata,
+      getInputChangeHandler,
     }),
     [
       anchor,
@@ -246,6 +252,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       register,
       control,
       getCellMetadata,
+      getInputChangeHandler,
     ]
   );
 
