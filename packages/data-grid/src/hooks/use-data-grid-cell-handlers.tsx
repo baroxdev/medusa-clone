@@ -23,7 +23,7 @@ export const useDataGridCellHandlers = ({
         prev,
         next,
         setter: (value) => {
-          setValue(value);
+          setValue(field, value);
         },
       });
 

@@ -103,6 +103,7 @@ export const useDataGridCell = <TData, TValue>({
 
   const handleContainerKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      console.log({ key: e.key });
       if (e.key === "Enter") {
         // Skip the Enter event handler, let the DataGridRoot handle it.
         return;

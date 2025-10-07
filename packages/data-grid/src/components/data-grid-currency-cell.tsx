@@ -10,29 +10,53 @@ import { DataGridCellProps, InputProps } from "./types";
 import { useCombinedRefs } from "../hooks/use-combined-refs";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "@medusa-clone/ui";
+import { Controller, ControllerRenderProps } from "react-hook-form";
 
 export const DataGridCurrencyCell = <TData, TValue>({
   context,
 }: DataGridCellProps<TData, TValue>) => {
-  const { renderProps } = useDataGridCell({
+  const { control, field, renderProps } = useDataGridCell({
     context,
   });
   const { container, input } = renderProps;
 
   return (
-    <DataGridCellContainer {...container}>
-      <Inner inputProps={input} />
-    </DataGridCellContainer>
+    <Controller
+      control={control}
+      name={field}
+      render={({ field }) => {
+        return (
+          <DataGridCellContainer {...container}>
+            <Inner field={field} inputProps={input} />
+          </DataGridCellContainer>
+        );
+      }}
+    />
   );
 };
 
-const Inner = ({ inputProps }: { inputProps: InputProps }) => {
-  const { value, ref, onFocus, onBlur, onChange, ...rest } = inputProps;
+const Inner = ({
+  inputProps,
+  field,
+}: {
+  inputProps: InputProps;
+  field: ControllerRenderProps<any, string>;
+}) => {
+  const { onChange: _, onBlur, ref, value, ...rest } = field;
+  const {
+    ref: inputRef,
+    onFocus,
+    onBlur: onInputBlur,
+    onChange,
+    ...attributes
+  } = inputProps;
+
   const formatter = useCallback((value?: string | number) => {
     const ensuredValue =
       typeof value === "number" ? value.toString() : value || "";
     return formatValue({
       value: ensuredValue,
+      decimalScale: 0,
       disableGroupSeparators: true,
       decimalSeparator: ".",
     });
@@ -55,21 +79,23 @@ const Inner = ({ inputProps }: { inputProps: InputProps }) => {
 
   //   NOTE: What will happen without this useEffect?
   //   ASSUMPTION: maybe not sync the value from react-hook-form to the internal
-  //   useEffect(() => {
-  //     let update = value;
+  //   RESULT: correct assumption
+  useEffect(() => {
+    let update = value;
 
-  //     if (!isNaN(Number(value))) {
-  //       update = formatter(value);
-  //     }
+    if (!isNaN(Number(value))) {
+      update = formatter(value);
+    }
 
-  //     setLocalValue(update);
-  //     console.log({ update });
-  //   }, [value, formatter]);
+    setLocalValue(update);
+  }, [value, formatter]);
 
-  const combinedRef = useCombinedRefs(ref);
+  const combinedRef = useCombinedRefs(inputRef, ref);
+
   return (
     <CurrencyInput
       {...rest}
+      {...attributes}
       className={cn(
         "text-sm text-[#52525B] cursor-default bg-transparent text-right outline-none"
         // NOTE: commented them because I'm not sure why these styles are neccessary.
@@ -81,11 +107,10 @@ const Inner = ({ inputProps }: { inputProps: InputProps }) => {
       formatValueOnBlur
       onBlur={() => {
         onBlur();
-
-        // NOTE: only save on blur
+        onInputBlur();
         onChange(localValue, value);
       }}
-      decimalScale={1}
+      decimalScale={0}
       decimalsLimit={0}
       onFocus={onFocus}
       autoComplete="off"
