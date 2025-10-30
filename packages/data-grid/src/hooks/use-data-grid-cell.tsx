@@ -103,8 +103,6 @@ export const useDataGridCell = <TData, TValue>({
 
   const handleContainerKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      console.log({ key: e.key });
-
       // QUESTION: Why do not handle the space here?
       if (!inputRef.current || !validateKeyStroke(e.key) || !showOverlay) {
         return;

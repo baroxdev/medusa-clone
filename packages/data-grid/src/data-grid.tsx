@@ -227,6 +227,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     onEditingChangeHandler,
     getSelectionValues,
     getValues,
+    setValue,
     execute,
     setSelectionValues,
   });

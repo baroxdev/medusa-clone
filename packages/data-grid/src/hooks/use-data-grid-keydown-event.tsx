@@ -7,6 +7,7 @@ import type {
   Path,
   PathValue,
   UseFormGetValues,
+  UseFormSetValue,
 } from "react-hook-form";
 import { DataGridUpdateCommand } from "../models/data-grid-update-command";
 import { DataGridBulkUpdateCommand } from "../lib/data-grid-bulk-update-command";
@@ -19,6 +20,7 @@ type UseDataGridKeydownEventOptions<TData, TFieldValues extends FieldValues> = {
   queryTool: DataGridQueryTool | null;
   isEditing: boolean;
   getValues: UseFormGetValues<TFieldValues>;
+  setValue: UseFormSetValue<TFieldValues>;
   setSingleRange: (coords: DataGridCoordinatesType | null) => void;
   setRangeEnd: (coords: DataGridCoordinatesType | null) => void;
   onEditingChangeHandler: (value: boolean) => void;
@@ -41,7 +43,8 @@ export const useDataGridKeydownEvent = <
   onEditingChangeHandler,
   getSelectionValues,
   setSelectionValues,
-  getValues: _getValues,
+  getValues,
+  setValue,
   execute,
 }: UseDataGridKeydownEventOptions<TData, TFieldValues>) => {
   const handleKeyboardNavigation = useCallback(
@@ -180,6 +183,42 @@ export const useDataGridKeydownEvent = <
     [anchor, getSelectionValues, setSelectionValues]
   );
 
+  /**
+   * You might wonder why we handle reset input by space key here,
+   * while we've handled it in src/hooks/use-data-grid-cell.tsx (line 121).
+   * The reason is that, in that place, we only handle the case
+   * resetting input on the ui only, but we do not update the form value.
+   * So here we handle the form value update when space key is pressed.
+   */
+  const handleSpaceKeyTextOrNumber = useCallback(
+    (anchor: DataGridCoordinatesType) => {
+      const field = matrix.getCellField(anchor);
+      const input = queryTool?.getInput(anchor);
+      if (!field || !input) {
+        return;
+      }
+
+      const current = getValues(field as Path<TFieldValues>);
+      const next = "";
+
+      const command = new DataGridUpdateCommand({
+        next,
+        prev: current,
+        setter: (value) => {
+          setValue(field as Path<TFieldValues>, value, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        },
+      });
+
+      command.execute();
+      input.focus();
+    },
+    [matrix]
+  );
+
   const handleSpaceKey = useCallback(
     (e: KeyboardEvent) => {
       if (!anchor) {
@@ -197,6 +236,10 @@ export const useDataGridKeydownEvent = <
       switch (type) {
         case "boolean":
           handleSpaceKeyBoolean(anchor);
+          break;
+        case "number":
+        case "text":
+          handleSpaceKeyTextOrNumber(anchor);
           break;
       }
     },
