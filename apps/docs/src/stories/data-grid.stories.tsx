@@ -146,7 +146,6 @@ export const Default: Story = {
       },
     });
 
-    console.log({ values: form.getValues() });
     return (
       <div className="fixed inset-2 flex flex-col overflow-hidden">
         <form className="flex flex-col h-full">

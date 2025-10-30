@@ -21,6 +21,7 @@
     "@medusa-clone/typescript-config": "workspace:*",
     "@medusa-clone/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.1.12",
+    "@types/lodash": "^4.17.20",
     "@types/react": "^18.2.61",
     "@types/react-dom": "^18.2.19",
     "postcss": "^8.5.6",
@@ -31,6 +32,7 @@
   "dependencies": {
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.12",
+    "lodash": "^4.17.21",
     "react": "catalog:",
     "react-currency-input-field": "^4.0.1",
     "react-hook-form": "^7.63.0"

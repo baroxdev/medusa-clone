@@ -104,12 +104,14 @@ export const useDataGridCell = <TData, TValue>({
   const handleContainerKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       console.log({ key: e.key });
-      if (e.key === "Enter") {
-        // Skip the Enter event handler, let the DataGridRoot handle it.
+
+      // QUESTION: Why do not handle the space here?
+      if (!inputRef.current || !validateKeyStroke(e.key) || !showOverlay) {
         return;
       }
 
-      if (!inputRef.current || !validateKeyStroke(e.key) || !showOverlay) {
+      if (e.key === "Enter") {
+        // Skip the Enter event handler, let the DataGridRoot handle it.
         return;
       }
 
@@ -138,7 +140,7 @@ export const useDataGridCell = <TData, TValue>({
       e.stopPropagation();
       e.preventDefault();
     },
-    [showOverlay]
+    [showOverlay, validateKeyStroke]
   );
 
   const isAnchor = useMemo(() => {

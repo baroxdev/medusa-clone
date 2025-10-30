@@ -2,18 +2,31 @@ import { useCallback } from "react";
 import { DataGridCoordinatesType } from "../components/types";
 import { DataGridMaxtrix } from "../models/data-grid-matrix";
 import { DataGridQueryTool } from "../models/data-grid-query-tool";
-import { FieldValues } from "react-hook-form";
+import type {
+  FieldValues,
+  Path,
+  PathValue,
+  UseFormGetValues,
+} from "react-hook-form";
+import { DataGridUpdateCommand } from "../models/data-grid-update-command";
+import { DataGridBulkUpdateCommand } from "../lib/data-grid-bulk-update-command";
 
 const ARROW_KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
-const VERTICAL_KEYS = ["ArrowUp", "ArrowDown"];
+// const VERTICAL_KEYS = ["ArrowUp", "ArrowDown"];
 type UseDataGridKeydownEventOptions<TData, TFieldValues extends FieldValues> = {
   matrix: DataGridMaxtrix<TData, TFieldValues>;
   anchor: DataGridCoordinatesType | null;
   queryTool: DataGridQueryTool | null;
   isEditing: boolean;
+  getValues: UseFormGetValues<TFieldValues>;
   setSingleRange: (coords: DataGridCoordinatesType | null) => void;
   setRangeEnd: (coords: DataGridCoordinatesType | null) => void;
   onEditingChangeHandler: (value: boolean) => void;
+  getSelectionValues: (
+    fields: string[]
+  ) => PathValue<TFieldValues, Path<TFieldValues>>[];
+  setSelectionValues: (fields: string[], values: string[]) => void;
+  execute: (command: DataGridUpdateCommand | DataGridBulkUpdateCommand) => void;
 };
 
 export const useDataGridKeydownEvent = <
@@ -26,12 +39,16 @@ export const useDataGridKeydownEvent = <
   queryTool,
   setSingleRange,
   onEditingChangeHandler,
+  getSelectionValues,
+  setSelectionValues,
+  getValues: _getValues,
+  execute,
 }: UseDataGridKeydownEventOptions<TData, TFieldValues>) => {
   const handleKeyboardNavigation = useCallback(
     (e: KeyboardEvent) => {
-      const direction = VERTICAL_KEYS.includes(e.key)
-        ? "vertical"
-        : "horizontal";
+      // const direction = VERTICAL_KEYS.includes(e.key)
+      //   ? "vertical"
+      //   : "horizontal";
 
       const updater = setSingleRange;
 
@@ -90,8 +107,15 @@ export const useDataGridKeydownEvent = <
   );
 
   const handleEnterKeyBoolean = useCallback(
-    (e: KeyboardEvent, anchor: DataGridCoordinatesType) => {
+    (_e: KeyboardEvent, anchor: DataGridCoordinatesType) => {
       console.warn("DO NOTHING WITH ENTER AT BOOLEAN CELL");
+      const field = matrix.getCellField(anchor);
+
+      if (!field) {
+        return;
+      }
+
+      // const current = getValues()
     },
     [anchor]
   );
@@ -135,13 +159,60 @@ export const useDataGridKeydownEvent = <
     [matrix, anchor, setSingleRange]
   );
 
+  const handleSpaceKeyBoolean = useCallback(
+    (anchor: DataGridCoordinatesType) => {
+      const end = anchor;
+
+      const fields = matrix.getFieldsInSelection(anchor, end);
+
+      const prev = getSelectionValues(fields) as boolean[];
+
+      const allChecked = prev.every((value) => value === true);
+      const next = Array.from({ length: prev.length }, () => !allChecked);
+      const command = new DataGridBulkUpdateCommand({
+        fields,
+        next,
+        prev,
+        setter: setSelectionValues,
+      });
+      execute(command);
+    },
+    [anchor, getSelectionValues, setSelectionValues]
+  );
+
+  const handleSpaceKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (!anchor) {
+        return;
+      }
+
+      e.preventDefault();
+
+      const type = matrix.getCellType(anchor);
+
+      if (!type) {
+        return;
+      }
+
+      switch (type) {
+        case "boolean":
+          handleSpaceKeyBoolean(anchor);
+          break;
+      }
+    },
+    [anchor, matrix, isEditing]
+  );
+
   const handleKeyDownEvent = useCallback(
     (e: KeyboardEvent) => {
-      console.log({ key: e.key });
       switch (true) {
         case ARROW_KEYS.includes(e.key):
           handleKeyboardNavigation(e);
           return;
+        case e.key === " ": {
+          handleSpaceKey(e);
+          return;
+        }
         case e.key === "Enter":
           handleEnterKey(e);
           return;

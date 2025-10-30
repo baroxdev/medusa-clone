@@ -26,6 +26,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { FieldValues, UseFormReturn } from "react-hook-form";
 import { useDataGridCellMetadata } from "./hooks/use-data-grid-cell-metadata";
 import { useDataGridCellHandlers } from "./hooks/use-data-grid-cell-handlers";
+import { useDataGridFormHandlers } from "./hooks/use-data-grid-form-handlers";
+import { useCommandHistory } from "./hooks/use-command-history";
 
 const ROW_HEIGHT = 40;
 export interface DataGridRootProps<
@@ -58,6 +60,8 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
 }: DataGridRootProps<TData, TFieldValues>) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const { execute } = useCommandHistory();
+
   const {
     register,
     control,
@@ -65,7 +69,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     setValue,
     formState: { errors },
   } = state;
-  console.log({ formValues: getValues() });
+
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
   const [_rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
     null
@@ -172,9 +176,9 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       columnVirtualizer.getTotalSize() -
       (virtualColumns[virtualColumns.length - 1]?.end ?? 0);
   }
-  console.log({ flatRows });
+
   const matrix = useMemo(
-    () => new DataGridMaxtrix(flatRows, columns),
+    () => new DataGridMaxtrix<TData, TFieldValues>(flatRows, columns),
     [flatRows, columns]
   );
 
@@ -203,7 +207,17 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     },
     [setSingleRange]
   );
-  const { handleKeyDownEvent } = useDataGridKeydownEvent({
+
+  const { getSelectionValues, setSelectionValues } = useDataGridFormHandlers<
+    TData,
+    TFieldValues
+  >({
+    matrix,
+    form: state,
+    anchor,
+  });
+
+  const { handleKeyDownEvent } = useDataGridKeydownEvent<TData, TFieldValues>({
     matrix,
     anchor,
     queryTool,
@@ -211,6 +225,10 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     setRangeEnd,
     setSingleRange,
     onEditingChangeHandler,
+    getSelectionValues,
+    getValues,
+    execute,
+    setSelectionValues,
   });
 
   const { getInputChangeHandler } = useDataGridCellHandlers({
@@ -241,6 +259,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       getWrapperFocusHandler,
       getCellMetadata,
       getInputChangeHandler,
+      getSelectionValues,
     }),
     [
       anchor,
@@ -253,6 +272,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       control,
       getCellMetadata,
       getInputChangeHandler,
+      getSelectionValues,
     ]
   );
 

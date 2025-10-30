@@ -4,6 +4,8 @@ import {
   Control,
   FieldErrors,
   FieldValues,
+  Path,
+  PathValue,
   UseFormRegister,
 } from "react-hook-form";
 
@@ -27,6 +29,9 @@ type DataGridContextType<TFieldValues extends FieldValues> = {
   ) => (e: React.FocusEvent<HTMLElement>) => void;
   getInputChangeHandler: (field: any) => void;
   getCellMetadata: (coordinates: DataGridCoordinatesType) => CellMetadata;
+  getSelectionValues: (
+    fields: string[]
+  ) => PathValue<TFieldValues, Path<TFieldValues>>[];
 };
 
 export const DataGridContext = createContext<DataGridContextType<any> | null>(
