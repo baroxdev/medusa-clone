@@ -116,13 +116,19 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       );
 
       // NOTE: comment because don't understand why need these line
-      // if (anchor && visibleRows[anchor.row]) {
-      //   toRender.add(anchor.row);
-      // }
+      // WHY: to make sure the anchor and rangeEnd rows are always rendered when virtualizing
+      if (anchor && visibleRows[anchor.row]) {
+        toRender.add(anchor.row);
+      }
 
-      // if (_rangeEnd && visibleRows[_rangeEnd.row]) {
-      //   toRender.add(_rangeEnd.row)
-      // }
+      if (rangeEnd && visibleRows[rangeEnd.row]) {
+        toRender.add(rangeEnd.row);
+      }
+      console.log("toRender rows:", {
+        toRender,
+        rangeEndRow: rangeEnd?.row,
+        anchorRow: anchor?.row,
+      });
 
       return Array.from(toRender).sort((a, b) => a - b); // current sort direction is ascending
     },
@@ -153,18 +159,18 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       );
 
       // NOTE: comment because don't understand why need these line
-      // if (anchor && visibleColumns[anchor.col]) {
-      //   toRender.add(anchor.col);
-      // }
+      // WHY: to make sure the anchor and rangeEnd rows are always rendered when virtualizing
+      if (anchor && visibleColumns[anchor.col]) {
+        toRender.add(anchor.col);
+      }
 
-      // if (_rangeEnd && visibleColumns[_rangeEnd.col]) {
-      //   toRender.add(_rangeEnd.col)
-      // }
+      if (rangeEnd && visibleColumns[rangeEnd.col]) {
+        toRender.add(rangeEnd.col);
+      }
 
       // The first column is pinned, so we always render it
       // QUESTION: What happen if we not pin the first one? Does this line not dynamic enough?
       toRender.add(0);
-
       return Array.from(toRender).sort((a, b) => a - b);
     },
   });
