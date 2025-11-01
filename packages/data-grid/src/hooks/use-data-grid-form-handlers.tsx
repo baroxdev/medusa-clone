@@ -51,7 +51,7 @@ export const useDataGridFormHandlers = <
         return;
       }
 
-      // BUG: Let see why do we need to convert values here
+      // FIXME: Let see why do we need to convert values here
       // const convertedValues = convertArrayToPrimitive(values, type)
       const rawValues = values;
       const currentValues = getValues();

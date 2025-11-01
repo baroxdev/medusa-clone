@@ -55,7 +55,7 @@ export interface InputProps {
   "data-cell-id": string;
   "data-field": string;
 
-  // BUG: Temporary
+  // FIXME: Temporary
   value?: string;
 }
 

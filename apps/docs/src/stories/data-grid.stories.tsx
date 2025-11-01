@@ -13,7 +13,7 @@ export default meta;
 
 type Story = StoryObj<typeof DataGrid>;
 
-const EXAMPLE_DATA = Array.from({ length: 30 }).map((_, i) => ({
+const EXAMPLE_DATA = Array.from({ length: 300 }).map((_, i) => ({
   id: i,
   first: `first ${i}`,
   second: false,
@@ -145,8 +145,6 @@ export const Default: Story = {
         data: EXAMPLE_DATA,
       },
     });
-
-    console.log({ formValues: form.getValues() });
 
     return (
       <div className="fixed inset-2 flex flex-col overflow-hidden">

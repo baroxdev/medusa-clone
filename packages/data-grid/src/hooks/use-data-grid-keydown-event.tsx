@@ -13,7 +13,7 @@ import { DataGridUpdateCommand } from "../models/data-grid-update-command";
 import { DataGridBulkUpdateCommand } from "../lib/data-grid-bulk-update-command";
 
 const ARROW_KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
-// const VERTICAL_KEYS = ["ArrowUp", "ArrowDown"];
+const VERTICAL_KEYS = ["ArrowUp", "ArrowDown"];
 type UseDataGridKeydownEventOptions<TData, TFieldValues extends FieldValues> = {
   matrix: DataGridMaxtrix<TData, TFieldValues>;
   anchor: DataGridCoordinatesType | null;
@@ -49,9 +49,18 @@ export const useDataGridKeydownEvent = <
 }: UseDataGridKeydownEventOptions<TData, TFieldValues>) => {
   const handleKeyboardNavigation = useCallback(
     (e: KeyboardEvent) => {
-      // const direction = VERTICAL_KEYS.includes(e.key)
-      //   ? "vertical"
-      //   : "horizontal";
+      if (!anchor) {
+        return;
+      }
+      const type = matrix.getCellField(anchor);
+
+      if (isEditing || type == "boolean") {
+        return;
+      }
+
+      const direction = VERTICAL_KEYS.includes(e.key)
+        ? "vertical"
+        : "horizontal";
 
       const updater = setSingleRange;
 
@@ -72,7 +81,7 @@ export const useDataGridKeydownEvent = <
       const next = matrix.getValidMovement(row, col, e.key);
       handleNavigation(next);
     },
-    [matrix, anchor, setSingleRange]
+    [matrix, anchor, setSingleRange, isEditing]
   );
 
   const handleMoveOnEnter = useCallback(
@@ -214,6 +223,7 @@ export const useDataGridKeydownEvent = <
       });
 
       command.execute();
+
       input.focus();
     },
     [matrix]
@@ -221,7 +231,8 @@ export const useDataGridKeydownEvent = <
 
   const handleSpaceKey = useCallback(
     (e: KeyboardEvent) => {
-      if (!anchor) {
+      console.log("HANDLE SPACE KEY at KEYDOWN EVENT");
+      if (!anchor || isEditing) {
         return;
       }
 
@@ -248,6 +259,7 @@ export const useDataGridKeydownEvent = <
 
   const handleKeyDownEvent = useCallback(
     (e: KeyboardEvent) => {
+      // FIXME: Cannot Shift + Select at the boolean cells.
       switch (true) {
         case ARROW_KEYS.includes(e.key):
           handleKeyboardNavigation(e);

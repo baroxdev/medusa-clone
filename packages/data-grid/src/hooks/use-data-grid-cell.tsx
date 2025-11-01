@@ -29,6 +29,10 @@ export const useDataGridCell = <TData, TValue>({
     setIsSelecting,
     getCellMetadata,
     getInputChangeHandler,
+    setRangeEnd,
+    getIsCellSelected,
+    getWrapperMouseOverHandler,
+    getWrapperMouseDownHandler,
   } = useDataGridContext();
 
   const [showOverlay, setShowOverlay] = useState(true);
@@ -68,13 +72,19 @@ export const useDataGridCell = <TData, TValue>({
         }
       }
 
+      if (e.shiftKey) {
+        console.log("SHIFT down");
+        setRangeEnd(coords);
+        return;
+      }
+
       if (containerRef.current) {
         setSingleRange(coords);
         setIsSelecting(true);
         containerRef.current.focus();
       }
     },
-    [anchor, coords, setSingleRange, setIsSelecting]
+    [anchor, coords, setSingleRange, setIsSelecting, setRangeEnd]
   );
 
   const handleInputBlur = useCallback(() => {
@@ -141,6 +151,30 @@ export const useDataGridCell = <TData, TValue>({
     [showOverlay, validateKeyStroke]
   );
 
+  const handleBooleanInnerMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (e.detail === 2) {
+        inputRef.current?.focus();
+        return;
+      }
+
+      if (e.shiftKey) {
+        setRangeEnd(coords);
+        return;
+      }
+
+      if (containerRef.current) {
+        setSingleRange(coords);
+        setIsSelecting(true);
+        containerRef.current.focus();
+      }
+    },
+    [setIsSelecting, setSingleRange, setRangeEnd, coords]
+  );
+
   const isAnchor = useMemo(() => {
     return anchor ? isCellMatch(anchor, coords) : false;
   }, [anchor, coords]);
@@ -156,14 +190,15 @@ export const useDataGridCell = <TData, TValue>({
     container: {
       field: field,
       isAnchor: isAnchor,
-      isSelected: false,
+      isSelected: getIsCellSelected(coords),
       isDragSelected: false,
       showOverlay: fieldWithoutOverlay ? false : showOverlay,
       innerProps: {
         ref: containerRef,
         onFocus: getWrapperFocusHandler(coords),
-        onMouseOver: () => {},
-        onMouseDown: () => {},
+        onMouseOver: getWrapperMouseOverHandler(coords),
+        onMouseDown:
+          type === "boolean" ? handleBooleanInnerMouseDown : undefined,
         onKeyDown: handleContainerKeyDown,
         ...innerAttributes,
       },

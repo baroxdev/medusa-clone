@@ -28,6 +28,7 @@ import { useDataGridCellMetadata } from "./hooks/use-data-grid-cell-metadata";
 import { useDataGridCellHandlers } from "./hooks/use-data-grid-cell-handlers";
 import { useDataGridFormHandlers } from "./hooks/use-data-grid-form-handlers";
 import { useCommandHistory } from "./hooks/use-command-history";
+import { useDataGridMouseUpEvent } from "./hooks/use-data-grid-mouse-up-event";
 
 const ROW_HEIGHT = 40;
 export interface DataGridRootProps<
@@ -38,6 +39,7 @@ export interface DataGridRootProps<
   columns: ColumnDef<TData>[];
   children?: React.ReactNode;
   state: UseFormReturn<TFieldValues>;
+  multiColumnSelection?: boolean;
 }
 
 const getCommonPinningStyles = <TDataValue,>(
@@ -57,6 +59,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
   data = [],
   columns,
   state,
+  multiColumnSelection = true,
 }: DataGridRootProps<TData, TFieldValues>) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -71,12 +74,13 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
   } = state;
 
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
-  const [_rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
+  const [rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
     null
   );
 
   const [isEditing, setIsEditing] = useState(false);
-  const [_isSelecting, setIsSelecting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const grid = useReactTable({
     data: data,
@@ -178,8 +182,13 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
   }
 
   const matrix = useMemo(
-    () => new DataGridMaxtrix<TData, TFieldValues>(flatRows, columns),
-    [flatRows, columns]
+    () =>
+      new DataGridMaxtrix<TData, TFieldValues>(
+        flatRows,
+        columns,
+        multiColumnSelection
+      ),
+    [flatRows, columns, multiColumnSelection]
   );
 
   const queryTool = useDataGridQueryTool(containerRef);
@@ -232,19 +241,37 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     setSelectionValues,
   });
 
-  const { getInputChangeHandler } = useDataGridCellHandlers({
+  const {
+    getInputChangeHandler,
+    getIsCellSelected,
+    getWrapperMouseOverHandler,
+    getWrapperMouseDownHandler,
+  } = useDataGridCellHandlers({
     setValue,
+    anchor,
+    rangeEnd,
+    setRangeEnd,
+    matrix,
+    isEditing,
+    isSelecting,
+    setIsSelecting,
+    multiColumnSelection,
   });
 
   const { getCellMetadata } = useDataGridCellMetadata({
     matrix,
   });
 
+  const { handleMouseUp } = useDataGridMouseUpEvent({
+    setIsSelecting,
+  });
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDownEvent);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDownEvent);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [handleKeyDownEvent]);
 
@@ -253,6 +280,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       anchor,
       errors,
       control,
+      rangeEnd,
       setIsEditing: onEditingChangeHandler,
       setIsSelecting,
       setSingleRange,
@@ -261,10 +289,15 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       getCellMetadata,
       getInputChangeHandler,
       getSelectionValues,
+      setRangeEnd,
+      getIsCellSelected,
+      getWrapperMouseOverHandler,
+      getWrapperMouseDownHandler,
     }),
     [
       anchor,
       errors,
+      rangeEnd,
       onEditingChangeHandler,
       setIsSelecting,
       setSingleRange,
@@ -274,6 +307,10 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       getCellMetadata,
       getInputChangeHandler,
       getSelectionValues,
+      setRangeEnd,
+      getIsCellSelected,
+      getWrapperMouseOverHandler,
+      getWrapperMouseDownHandler,
     ]
   );
 
