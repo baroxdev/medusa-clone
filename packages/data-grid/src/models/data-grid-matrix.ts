@@ -10,9 +10,41 @@ import { FieldValues } from "react-hook-form";
 
 export class DataGridMaxtrix<TData, TFieldValues extends FieldValues> {
   private cells: Grid<TFieldValues>;
+  private multiColumnSelection: boolean;
 
-  constructor(data: Row<TData>[], columns: ColumnDef<TData>[]) {
+  constructor(
+    data: Row<TData>[],
+    columns: ColumnDef<TData>[],
+    multiColumnSelection: boolean
+  ) {
     this.cells = this._populateCells(data, columns);
+    this.multiColumnSelection = multiColumnSelection;
+  }
+
+  getFieldsInSelection(
+    start: DataGridCoordinatesType,
+    end: DataGridCoordinatesType
+  ): string[] {
+    const keys: string[] = [];
+
+    if (!start || !end) {
+      return keys;
+    }
+
+    const startRow = Math.min(start.row, end.row);
+    const endRow = Math.max(start.row, end.row);
+    const startCol = start.col;
+    const endCol = start.col;
+
+    for (let row = startRow; row <= endRow; row++) {
+      for (let col = startCol; col <= endCol; col++) {
+        if (this._isValidPosition(row, col) && this.cells[row][col] !== null) {
+          keys.push(this.cells[row][col]?.field as string);
+        }
+      }
+    }
+
+    return keys;
   }
 
   getCellField(cell: DataGridCoordinatesType): string | null {
@@ -60,6 +92,33 @@ export class DataGridMaxtrix<TData, TFieldValues extends FieldValues> {
       row,
       col,
     };
+  }
+
+  getIsCellSelected(
+    cell: DataGridCoordinatesType | null,
+    start: DataGridCoordinatesType | null,
+    end: DataGridCoordinatesType | null
+  ): boolean {
+    if (!cell || !start || !end) {
+      return false;
+    }
+
+    if (!this.multiColumnSelection && start.col !== end.col) {
+      throw new Error("Multi-column selection is disabled.");
+    }
+
+    const startRow = Math.min(start.row, end.row);
+    const endRow = Math.max(start.row, end.row);
+    const startCol = Math.min(start.col, end.col);
+    const endCol = Math.max(start.col, end.col);
+
+    // no suggestion
+    return (
+      cell.row >= startRow &&
+      cell.row <= endRow &&
+      cell.col >= startCol &&
+      cell.col <= endCol
+    );
   }
 
   private _getDirectionDeltas(direction: DataGridDirection): [number, number] {

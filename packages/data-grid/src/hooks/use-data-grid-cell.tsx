@@ -29,6 +29,10 @@ export const useDataGridCell = <TData, TValue>({
     setIsSelecting,
     getCellMetadata,
     getInputChangeHandler,
+    setRangeEnd,
+    getIsCellSelected,
+    getWrapperMouseOverHandler,
+    getWrapperMouseDownHandler,
   } = useDataGridContext();
 
   const [showOverlay, setShowOverlay] = useState(true);
@@ -68,13 +72,19 @@ export const useDataGridCell = <TData, TValue>({
         }
       }
 
+      if (e.shiftKey) {
+        console.log("SHIFT down");
+        setRangeEnd(coords);
+        return;
+      }
+
       if (containerRef.current) {
         setSingleRange(coords);
         setIsSelecting(true);
         containerRef.current.focus();
       }
     },
-    [anchor, coords, setSingleRange, setIsSelecting]
+    [anchor, coords, setSingleRange, setIsSelecting, setRangeEnd]
   );
 
   const handleInputBlur = useCallback(() => {
@@ -103,12 +113,13 @@ export const useDataGridCell = <TData, TValue>({
 
   const handleContainerKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.key === "Enter") {
-        // Skip the Enter event handler, let the DataGridRoot handle it.
+      // QUESTION: Why do not handle the space here?
+      if (!inputRef.current || !validateKeyStroke(e.key) || !showOverlay) {
         return;
       }
 
-      if (!inputRef.current || !validateKeyStroke(e.key) || !showOverlay) {
+      if (e.key === "Enter") {
+        // Skip the Enter event handler, let the DataGridRoot handle it.
         return;
       }
 
@@ -137,7 +148,31 @@ export const useDataGridCell = <TData, TValue>({
       e.stopPropagation();
       e.preventDefault();
     },
-    [showOverlay]
+    [showOverlay, validateKeyStroke]
+  );
+
+  const handleBooleanInnerMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (e.detail === 2) {
+        inputRef.current?.focus();
+        return;
+      }
+
+      if (e.shiftKey) {
+        setRangeEnd(coords);
+        return;
+      }
+
+      if (containerRef.current) {
+        setSingleRange(coords);
+        setIsSelecting(true);
+        containerRef.current.focus();
+      }
+    },
+    [setIsSelecting, setSingleRange, setRangeEnd, coords]
   );
 
   const isAnchor = useMemo(() => {
@@ -155,14 +190,15 @@ export const useDataGridCell = <TData, TValue>({
     container: {
       field: field,
       isAnchor: isAnchor,
-      isSelected: false,
+      isSelected: getIsCellSelected(coords),
       isDragSelected: false,
       showOverlay: fieldWithoutOverlay ? false : showOverlay,
       innerProps: {
         ref: containerRef,
         onFocus: getWrapperFocusHandler(coords),
-        onMouseOver: () => {},
-        onMouseDown: () => {},
+        onMouseOver: getWrapperMouseOverHandler(coords),
+        onMouseDown:
+          type === "boolean" ? handleBooleanInnerMouseDown : undefined,
         onKeyDown: handleContainerKeyDown,
         ...innerAttributes,
       },

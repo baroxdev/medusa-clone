@@ -2,7 +2,15 @@ import { useCallback } from "react";
 import { DataGridCoordinatesType } from "../components/types";
 import { DataGridMaxtrix } from "../models/data-grid-matrix";
 import { DataGridQueryTool } from "../models/data-grid-query-tool";
-import { FieldValues } from "react-hook-form";
+import type {
+  FieldValues,
+  Path,
+  PathValue,
+  UseFormGetValues,
+  UseFormSetValue,
+} from "react-hook-form";
+import { DataGridUpdateCommand } from "../models/data-grid-update-command";
+import { DataGridBulkUpdateCommand } from "../lib/data-grid-bulk-update-command";
 
 const ARROW_KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 const VERTICAL_KEYS = ["ArrowUp", "ArrowDown"];
@@ -11,9 +19,16 @@ type UseDataGridKeydownEventOptions<TData, TFieldValues extends FieldValues> = {
   anchor: DataGridCoordinatesType | null;
   queryTool: DataGridQueryTool | null;
   isEditing: boolean;
+  getValues: UseFormGetValues<TFieldValues>;
+  setValue: UseFormSetValue<TFieldValues>;
   setSingleRange: (coords: DataGridCoordinatesType | null) => void;
   setRangeEnd: (coords: DataGridCoordinatesType | null) => void;
   onEditingChangeHandler: (value: boolean) => void;
+  getSelectionValues: (
+    fields: string[]
+  ) => PathValue<TFieldValues, Path<TFieldValues>>[];
+  setSelectionValues: (fields: string[], values: string[]) => void;
+  execute: (command: DataGridUpdateCommand | DataGridBulkUpdateCommand) => void;
 };
 
 export const useDataGridKeydownEvent = <
@@ -26,9 +41,23 @@ export const useDataGridKeydownEvent = <
   queryTool,
   setSingleRange,
   onEditingChangeHandler,
+  getSelectionValues,
+  setSelectionValues,
+  getValues,
+  setValue,
+  execute,
 }: UseDataGridKeydownEventOptions<TData, TFieldValues>) => {
   const handleKeyboardNavigation = useCallback(
     (e: KeyboardEvent) => {
+      if (!anchor) {
+        return;
+      }
+      const type = matrix.getCellField(anchor);
+
+      if (isEditing || type == "boolean") {
+        return;
+      }
+
       const direction = VERTICAL_KEYS.includes(e.key)
         ? "vertical"
         : "horizontal";
@@ -52,7 +81,7 @@ export const useDataGridKeydownEvent = <
       const next = matrix.getValidMovement(row, col, e.key);
       handleNavigation(next);
     },
-    [matrix, anchor, setSingleRange]
+    [matrix, anchor, setSingleRange, isEditing]
   );
 
   const handleMoveOnEnter = useCallback(
@@ -90,8 +119,15 @@ export const useDataGridKeydownEvent = <
   );
 
   const handleEnterKeyBoolean = useCallback(
-    (e: KeyboardEvent, anchor: DataGridCoordinatesType) => {
+    (_e: KeyboardEvent, anchor: DataGridCoordinatesType) => {
       console.warn("DO NOTHING WITH ENTER AT BOOLEAN CELL");
+      const field = matrix.getCellField(anchor);
+
+      if (!field) {
+        return;
+      }
+
+      // const current = getValues()
     },
     [anchor]
   );
@@ -135,13 +171,103 @@ export const useDataGridKeydownEvent = <
     [matrix, anchor, setSingleRange]
   );
 
+  const handleSpaceKeyBoolean = useCallback(
+    (anchor: DataGridCoordinatesType) => {
+      const end = anchor;
+
+      const fields = matrix.getFieldsInSelection(anchor, end);
+
+      const prev = getSelectionValues(fields) as boolean[];
+
+      const allChecked = prev.every((value) => value === true);
+      const next = Array.from({ length: prev.length }, () => !allChecked);
+      const command = new DataGridBulkUpdateCommand({
+        fields,
+        next,
+        prev,
+        setter: setSelectionValues,
+      });
+      execute(command);
+    },
+    [anchor, getSelectionValues, setSelectionValues]
+  );
+
+  /**
+   * You might wonder why we handle reset input by space key here,
+   * while we've handled it in src/hooks/use-data-grid-cell.tsx (line 121).
+   * The reason is that, in that place, we only handle the case
+   * resetting input on the ui only, but we do not update the form value.
+   * So here we handle the form value update when space key is pressed.
+   */
+  const handleSpaceKeyTextOrNumber = useCallback(
+    (anchor: DataGridCoordinatesType) => {
+      const field = matrix.getCellField(anchor);
+      const input = queryTool?.getInput(anchor);
+      if (!field || !input) {
+        return;
+      }
+
+      const current = getValues(field as Path<TFieldValues>);
+      const next = "";
+
+      const command = new DataGridUpdateCommand({
+        next,
+        prev: current,
+        setter: (value) => {
+          setValue(field as Path<TFieldValues>, value, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        },
+      });
+
+      command.execute();
+
+      input.focus();
+    },
+    [matrix]
+  );
+
+  const handleSpaceKey = useCallback(
+    (e: KeyboardEvent) => {
+      console.log("HANDLE SPACE KEY at KEYDOWN EVENT");
+      if (!anchor || isEditing) {
+        return;
+      }
+
+      e.preventDefault();
+
+      const type = matrix.getCellType(anchor);
+
+      if (!type) {
+        return;
+      }
+
+      switch (type) {
+        case "boolean":
+          handleSpaceKeyBoolean(anchor);
+          break;
+        case "number":
+        case "text":
+          handleSpaceKeyTextOrNumber(anchor);
+          break;
+      }
+    },
+    [anchor, matrix, isEditing]
+  );
+
   const handleKeyDownEvent = useCallback(
     (e: KeyboardEvent) => {
-      console.log({ key: e.key });
+      // FIXME: Cannot Shift + Select at the boolean cells.
       switch (true) {
         case ARROW_KEYS.includes(e.key):
           handleKeyboardNavigation(e);
           return;
+        case e.key === " ": {
+          handleSpaceKey(e);
+          return;
+        }
         case e.key === "Enter":
           handleEnterKey(e);
           return;

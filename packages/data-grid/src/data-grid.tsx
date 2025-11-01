@@ -26,6 +26,9 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { FieldValues, UseFormReturn } from "react-hook-form";
 import { useDataGridCellMetadata } from "./hooks/use-data-grid-cell-metadata";
 import { useDataGridCellHandlers } from "./hooks/use-data-grid-cell-handlers";
+import { useDataGridFormHandlers } from "./hooks/use-data-grid-form-handlers";
+import { useCommandHistory } from "./hooks/use-command-history";
+import { useDataGridMouseUpEvent } from "./hooks/use-data-grid-mouse-up-event";
 
 const ROW_HEIGHT = 40;
 export interface DataGridRootProps<
@@ -36,6 +39,7 @@ export interface DataGridRootProps<
   columns: ColumnDef<TData>[];
   children?: React.ReactNode;
   state: UseFormReturn<TFieldValues>;
+  multiColumnSelection?: boolean;
 }
 
 const getCommonPinningStyles = <TDataValue,>(
@@ -55,8 +59,11 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
   data = [],
   columns,
   state,
+  multiColumnSelection = true,
 }: DataGridRootProps<TData, TFieldValues>) => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { execute } = useCommandHistory();
 
   const {
     register,
@@ -65,14 +72,15 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     setValue,
     formState: { errors },
   } = state;
-  console.log({ formValues: getValues() });
+
   const [anchor, setAnchor] = useState<DataGridCoordinatesType | null>(null);
-  const [_rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
+  const [rangeEnd, setRangeEnd] = useState<DataGridCoordinatesType | null>(
     null
   );
 
   const [isEditing, setIsEditing] = useState(false);
-  const [_isSelecting, setIsSelecting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const grid = useReactTable({
     data: data,
@@ -108,13 +116,19 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       );
 
       // NOTE: comment because don't understand why need these line
-      // if (anchor && visibleRows[anchor.row]) {
-      //   toRender.add(anchor.row);
-      // }
+      // WHY: to make sure the anchor and rangeEnd rows are always rendered when virtualizing
+      if (anchor && visibleRows[anchor.row]) {
+        toRender.add(anchor.row);
+      }
 
-      // if (_rangeEnd && visibleRows[_rangeEnd.row]) {
-      //   toRender.add(_rangeEnd.row)
-      // }
+      if (rangeEnd && visibleRows[rangeEnd.row]) {
+        toRender.add(rangeEnd.row);
+      }
+      console.log("toRender rows:", {
+        toRender,
+        rangeEndRow: rangeEnd?.row,
+        anchorRow: anchor?.row,
+      });
 
       return Array.from(toRender).sort((a, b) => a - b); // current sort direction is ascending
     },
@@ -145,18 +159,18 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       );
 
       // NOTE: comment because don't understand why need these line
-      // if (anchor && visibleColumns[anchor.col]) {
-      //   toRender.add(anchor.col);
-      // }
+      // WHY: to make sure the anchor and rangeEnd rows are always rendered when virtualizing
+      if (anchor && visibleColumns[anchor.col]) {
+        toRender.add(anchor.col);
+      }
 
-      // if (_rangeEnd && visibleColumns[_rangeEnd.col]) {
-      //   toRender.add(_rangeEnd.col)
-      // }
+      if (rangeEnd && visibleColumns[rangeEnd.col]) {
+        toRender.add(rangeEnd.col);
+      }
 
       // The first column is pinned, so we always render it
       // QUESTION: What happen if we not pin the first one? Does this line not dynamic enough?
       toRender.add(0);
-
       return Array.from(toRender).sort((a, b) => a - b);
     },
   });
@@ -172,10 +186,15 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       columnVirtualizer.getTotalSize() -
       (virtualColumns[virtualColumns.length - 1]?.end ?? 0);
   }
-  console.log({ flatRows });
+
   const matrix = useMemo(
-    () => new DataGridMaxtrix(flatRows, columns),
-    [flatRows, columns]
+    () =>
+      new DataGridMaxtrix<TData, TFieldValues>(
+        flatRows,
+        columns,
+        multiColumnSelection
+      ),
+    [flatRows, columns, multiColumnSelection]
   );
 
   const queryTool = useDataGridQueryTool(containerRef);
@@ -203,7 +222,17 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     },
     [setSingleRange]
   );
-  const { handleKeyDownEvent } = useDataGridKeydownEvent({
+
+  const { getSelectionValues, setSelectionValues } = useDataGridFormHandlers<
+    TData,
+    TFieldValues
+  >({
+    matrix,
+    form: state,
+    anchor,
+  });
+
+  const { handleKeyDownEvent } = useDataGridKeydownEvent<TData, TFieldValues>({
     matrix,
     anchor,
     queryTool,
@@ -211,21 +240,44 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
     setRangeEnd,
     setSingleRange,
     onEditingChangeHandler,
+    getSelectionValues,
+    getValues,
+    setValue,
+    execute,
+    setSelectionValues,
   });
 
-  const { getInputChangeHandler } = useDataGridCellHandlers({
+  const {
+    getInputChangeHandler,
+    getIsCellSelected,
+    getWrapperMouseOverHandler,
+    getWrapperMouseDownHandler,
+  } = useDataGridCellHandlers({
     setValue,
+    anchor,
+    rangeEnd,
+    setRangeEnd,
+    matrix,
+    isEditing,
+    isSelecting,
+    setIsSelecting,
+    multiColumnSelection,
   });
 
   const { getCellMetadata } = useDataGridCellMetadata({
     matrix,
   });
 
+  const { handleMouseUp } = useDataGridMouseUpEvent({
+    setIsSelecting,
+  });
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDownEvent);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDownEvent);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [handleKeyDownEvent]);
 
@@ -234,6 +286,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       anchor,
       errors,
       control,
+      rangeEnd,
       setIsEditing: onEditingChangeHandler,
       setIsSelecting,
       setSingleRange,
@@ -241,10 +294,16 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       getWrapperFocusHandler,
       getCellMetadata,
       getInputChangeHandler,
+      getSelectionValues,
+      setRangeEnd,
+      getIsCellSelected,
+      getWrapperMouseOverHandler,
+      getWrapperMouseDownHandler,
     }),
     [
       anchor,
       errors,
+      rangeEnd,
       onEditingChangeHandler,
       setIsSelecting,
       setSingleRange,
@@ -253,6 +312,11 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
       control,
       getCellMetadata,
       getInputChangeHandler,
+      getSelectionValues,
+      setRangeEnd,
+      getIsCellSelected,
+      getWrapperMouseOverHandler,
+      getWrapperMouseDownHandler,
     ]
   );
 
