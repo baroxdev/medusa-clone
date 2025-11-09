@@ -79,7 +79,7 @@ const DataGridRoot = <TData, TFieldValues extends FieldValues = FieldValues>({
   );
 
   const [isEditing, setIsEditing] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  // const [isDragging, setIsDragging] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
 
   const grid = useReactTable({

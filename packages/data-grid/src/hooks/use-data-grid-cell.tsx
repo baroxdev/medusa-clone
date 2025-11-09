@@ -21,7 +21,7 @@ export const useDataGridCell = <TData, TValue>({
   const {
     anchor,
     control,
-    errors,
+    // errors,
     register,
     getWrapperFocusHandler,
     setIsEditing,
@@ -32,7 +32,7 @@ export const useDataGridCell = <TData, TValue>({
     setRangeEnd,
     getIsCellSelected,
     getWrapperMouseOverHandler,
-    getWrapperMouseDownHandler,
+    // getWrapperMouseDownHandler,
   } = useDataGridContext();
 
   const [showOverlay, setShowOverlay] = useState(true);

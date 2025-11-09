@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import set from "lodash/set";
+import set from "lodash.set";
 import { FieldValues, Path, PathValue, UseFormReturn } from "react-hook-form";
 import { DataGridMaxtrix } from "../models/data-grid-matrix";
 import {

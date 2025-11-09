@@ -25,10 +25,10 @@ export const useDataGridCellHandlers = <
   anchor,
   rangeEnd,
   setRangeEnd,
-  multiColumnSelection,
-  isEditing,
+  // multiColumnSelection,
+  // isEditing,
   isSelecting,
-  setIsSelecting,
+  // setIsSelecting,
 }: UseDataGridCellHandlersOptions<TData, TFieldValues>) => {
   // Simple version as I usually do
   //   const getInputChangeHandler = useCallback((field: any) => {

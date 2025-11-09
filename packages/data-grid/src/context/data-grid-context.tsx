@@ -29,7 +29,9 @@ type DataGridContextType<TFieldValues extends FieldValues> = {
   getWrapperFocusHandler: (
     coordinates: DataGridCoordinatesType
   ) => (e: React.FocusEvent<HTMLElement>) => void;
-  getInputChangeHandler: (field: any) => void;
+  getInputChangeHandler: (
+    field: Path<TFieldValues>
+  ) => (next: any, prev: any) => void;
   getWrapperMouseOverHandler: (
     coordinates: DataGridCoordinatesType | null
   ) => ((e: React.MouseEvent<HTMLElement>) => void) | undefined;
